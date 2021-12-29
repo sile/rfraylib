@@ -9,3 +9,6 @@ edition = "2021"
 bitflags = "1"
 raylib4-sys = { git = "ssh://git@github.com/sile/raylib4-sys" }
 thiserror = "1"
+
+[dev-dependencies]
+anyhow = "1"
