@@ -10,6 +10,14 @@ fn main() -> anyhow::Result<()> {
             monitor.get_physical_size(),
         );
     }
-    std::thread::sleep(std::time::Duration::from_secs(10));
+    println!("Clipboard: {:?}", system.window().get_clipboard_text());
+    for _ in 0..10 {
+        println!(
+            "Cursor: hidden={}, on_screen={}",
+            system.cursor().is_hidden(),
+            system.cursor().is_on_screen()
+        );
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
     Ok(())
 }

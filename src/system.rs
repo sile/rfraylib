@@ -1,3 +1,4 @@
+use crate::core::cursor::Cursor;
 use crate::core::monitor::Monitors;
 use crate::core::window::{ConfigFlag, Window};
 use crate::structs::Size;
@@ -77,6 +78,7 @@ impl SystemBuilder {
         Ok(System {
             window: Window(()),
             monitors: Monitors(()),
+            cursor: Cursor(()),
         })
     }
 }
@@ -95,6 +97,7 @@ impl Default for SystemBuilder {
 pub struct System {
     window: Window,
     monitors: Monitors,
+    cursor: Cursor,
 }
 
 impl System {
@@ -112,5 +115,13 @@ impl System {
 
     pub fn monitors_mut(&mut self) -> &mut Monitors {
         &mut self.monitors
+    }
+
+    pub fn cursor(&self) -> &Cursor {
+        &self.cursor
+    }
+
+    pub fn cursor_mut(&mut self) -> &mut Cursor {
+        &mut self.cursor
     }
 }

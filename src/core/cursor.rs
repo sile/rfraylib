@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub struct Cursor(());
+pub struct Cursor(pub(crate) ()); // TODO
 
 impl Cursor {
     /// Shows cursor.
