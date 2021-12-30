@@ -1,3 +1,29 @@
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct Position {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl From<(f32, f32)> for Position {
+    fn from((x, y): (f32, f32)) -> Self {
+        Self { x, y }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct Size {
+    pub width: f32,
+    pub height: f32,
+}
+
+impl From<(f32, f32)> for Size {
+    fn from((width, height): (f32, f32)) -> Self {
+        Self { width, height }
+    }
+}
+
 /// Vector2 type.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

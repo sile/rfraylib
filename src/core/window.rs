@@ -28,8 +28,53 @@ bitflags::bitflags! {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[non_exhaustive]
+pub enum ConfigFlag {
+    FullscreenMode, // raylib4_sys::ConfigFlags_FLAG_FULLSCREEN_MODE,
+    WindowResizable,
+    WindowUndecorated,
+    WindowTransparent,
+    Msaa4xHint,
+    VsyncHint,
+    WindowHidden,
+    WindowAlwaysRun,
+    WindowMinimized,
+    WindowMaximized,
+    WindowUnfocused,
+    WindowTopmost,
+    WindowHighdpi,
+    InterlacedHint,
+}
+
+impl ConfigFlag {
+    pub(crate) fn flags_to_bits(flags: impl Iterator<Item = Self>) -> raylib4_sys::ConfigFlags {
+        let mut bits = 0;
+        for f in flags {
+            let v = match f {
+                Self::FullscreenMode => raylib4_sys::ConfigFlags_FLAG_FULLSCREEN_MODE,
+                Self::WindowResizable => raylib4_sys::ConfigFlags_FLAG_WINDOW_RESIZABLE,
+                Self::WindowUndecorated => raylib4_sys::ConfigFlags_FLAG_WINDOW_UNDECORATED,
+                Self::WindowTransparent => raylib4_sys::ConfigFlags_FLAG_WINDOW_TRANSPARENT,
+                Self::Msaa4xHint => raylib4_sys::ConfigFlags_FLAG_MSAA_4X_HINT,
+                Self::VsyncHint => raylib4_sys::ConfigFlags_FLAG_VSYNC_HINT,
+                Self::WindowHidden => raylib4_sys::ConfigFlags_FLAG_WINDOW_HIDDEN,
+                Self::WindowAlwaysRun => raylib4_sys::ConfigFlags_FLAG_WINDOW_ALWAYS_RUN,
+                Self::WindowMinimized => raylib4_sys::ConfigFlags_FLAG_WINDOW_MINIMIZED,
+                Self::WindowMaximized => raylib4_sys::ConfigFlags_FLAG_WINDOW_MAXIMIZED,
+                Self::WindowUnfocused => raylib4_sys::ConfigFlags_FLAG_WINDOW_UNFOCUSED,
+                Self::WindowTopmost => raylib4_sys::ConfigFlags_FLAG_WINDOW_TOPMOST,
+                Self::WindowHighdpi => raylib4_sys::ConfigFlags_FLAG_WINDOW_HIGHDPI,
+                Self::InterlacedHint => raylib4_sys::ConfigFlags_FLAG_INTERLACED_HINT,
+            };
+            bits |= v;
+        }
+        bits
+    }
+}
+
 #[derive(Debug)]
-pub struct Window(());
+pub struct Window(pub(crate) ()); // TODO: remove pub
 
 impl Window {
     /// Initialize window and OpenGL context.
@@ -95,6 +140,7 @@ impl Window {
     /// Check if one specific window flag is enabled.
     ///
     /// If `flag` contains flags other than one, this method returns `None`.
+    /// TODO: s/ConfigFlags/ConfigFlag/
     pub fn is_state(&self, flag: ConfigFlags) -> Option<bool> {
         if flag.bits().count_ones() != 1 {
             None
