@@ -1,15 +1,13 @@
 fn main() -> anyhow::Result<()> {
     let system = rfraylib::SystemBuilder::new().build()?;
-    for monitor in system.window().get_monitors() {
+    for monitor in system.monitors().iter() {
         println!(
-            "[{}] name={:?}, refresh-rate={}, size(pixel)={}x{}, size(mm)={}x{}",
-            monitor.index(),
+            "[{}] name={:?}, refresh-rate={}, size(pixel)={:?}, size(mm)={:?}",
+            monitor.number().get(),
             monitor.get_name(),
             monitor.get_refresh_rate(),
-            monitor.get_width(),
-            monitor.get_height(),
-            monitor.get_physical_width(),
-            monitor.get_physical_height()
+            monitor.get_size(),
+            monitor.get_physical_size(),
         );
     }
     std::thread::sleep(std::time::Duration::from_secs(10));

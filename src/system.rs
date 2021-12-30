@@ -1,3 +1,4 @@
+use crate::core::monitor::Monitors;
 use crate::core::window::{ConfigFlag, Window};
 use crate::structs::Size;
 use std::collections::BTreeSet;
@@ -73,7 +74,10 @@ impl SystemBuilder {
             );
         }
 
-        Ok(System { window: Window(()) })
+        Ok(System {
+            window: Window(()),
+            monitors: Monitors(()),
+        })
     }
 }
 
@@ -90,6 +94,7 @@ impl Default for SystemBuilder {
 #[derive(Debug)]
 pub struct System {
     window: Window,
+    monitors: Monitors,
 }
 
 impl System {
@@ -99,5 +104,13 @@ impl System {
 
     pub fn window_mut(&mut self) -> &mut Window {
         &mut self.window
+    }
+
+    pub fn monitors(&self) -> &Monitors {
+        &self.monitors
+    }
+
+    pub fn monitors_mut(&mut self) -> &mut Monitors {
+        &mut self.monitors
     }
 }
