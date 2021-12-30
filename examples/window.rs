@@ -22,6 +22,12 @@ fn main() -> anyhow::Result<()> {
         if system.window().is_file_dropped() {
             println!("File dropped!");
         }
+        for c in system.keyboard_mut().take_pressed_chars() {
+            println!("Pressed Char: {}", c);
+        }
+        for k in system.keyboard_mut().take_pressed_keys() {
+            println!("Pressed Key: {:?}", k);
+        }
     }
     Ok(())
 }

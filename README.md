@@ -62,3 +62,5 @@ Omitted functions:
   - DecompressData
   - EncodeDataBase64
   - DecodeDataBase64
+  - SaveStorageValue
+  - LoadStorageValue

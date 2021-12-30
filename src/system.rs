@@ -1,5 +1,6 @@
 use crate::core::cursor::Cursor;
 use crate::core::drawing::{RenderTexture, TextureCanvas, WindowCanvas};
+use crate::core::input::Keyboard;
 use crate::core::monitor::Monitors;
 use crate::core::window::{ConfigFlag, Window};
 use crate::structs::Size;
@@ -93,6 +94,7 @@ impl SystemBuilder {
             window: Window(()),
             monitors: Monitors(()),
             cursor: Cursor(()),
+            keyboard: Keyboard(()),
         };
 
         if let Some(x) = self.target_fps {
@@ -119,6 +121,7 @@ pub struct System {
     window: Window,
     monitors: Monitors,
     cursor: Cursor,
+    keyboard: Keyboard,
 }
 
 impl System {
@@ -144,6 +147,14 @@ impl System {
 
     pub fn cursor_mut(&mut self) -> &mut Cursor {
         &mut self.cursor
+    }
+
+    pub fn keyboard(&self) -> &Keyboard {
+        &self.keyboard
+    }
+
+    pub fn keyboard_mut(&mut self) -> &mut Keyboard {
+        &mut self.keyboard
     }
 
     /// Setup canvas (framebuffer) to start drawing.
@@ -186,6 +197,13 @@ impl System {
     pub fn take_screenshot(&self, path: &str) -> Result<(), std::ffi::NulError> {
         let path = std::ffi::CString::new(path)?;
         unsafe { raylib4_sys::TakeScreenshot(path.as_ptr()) };
+        Ok(())
+    }
+
+    /// Open URL with default system browser (if available).
+    pub fn open_url(&self, url: &str) -> Result<(), std::ffi::NulError> {
+        let url = std::ffi::CString::new(url)?;
+        unsafe { raylib4_sys::OpenURL(url.as_ptr()) };
         Ok(())
     }
 }
