@@ -1,5 +1,5 @@
 [package]
-name = "raylib4"
+name = "rfraylib"
 version = "0.1.0"
 edition = "2021"
 
