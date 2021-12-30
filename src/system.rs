@@ -2,6 +2,7 @@ use crate::core::cursor::Cursor;
 use crate::core::drawing::{RenderTexture, TextureCanvas, WindowCanvas};
 use crate::core::input::gamepad::{Gamepad, GamepadButton};
 use crate::core::input::mouse::Mouse;
+use crate::core::input::touch::Touch;
 use crate::core::input::Keyboard;
 use crate::core::monitor::Monitors;
 use crate::core::window::{ConfigFlag, Window};
@@ -100,6 +101,7 @@ impl SystemBuilder {
             keyboard: Keyboard(()),
             gamepads: (0..MAX_GAMEPADS).map(|index| Gamepad { index }).collect(),
             mouse: Mouse(()),
+            touch: Touch(()),
         };
 
         if let Some(x) = self.target_fps {
@@ -129,6 +131,7 @@ pub struct System {
     keyboard: Keyboard,
     gamepads: Vec<Gamepad>,
     mouse: Mouse,
+    touch: Touch,
 }
 
 impl System {
@@ -178,6 +181,14 @@ impl System {
 
     pub fn mouse_mut(&mut self) -> &mut Mouse {
         &mut self.mouse
+    }
+
+    pub fn touch(&self) -> &Touch {
+        &self.touch
+    }
+
+    pub fn touch_mut(&mut self) -> &mut Touch {
+        &mut self.touch
     }
 
     /// Get the last gamepad button pressed.

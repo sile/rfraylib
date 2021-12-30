@@ -35,6 +35,9 @@ fn main() -> anyhow::Result<()> {
         if system.mouse().get_delta() != (0.0, 0.0).into() {
             println!("Mouse: {:?}", system.mouse().get_position());
         }
+        for point in system.touch().get_touch_points() {
+            println!("Touch: {:?}", point);
+        }
     }
     Ok(())
 }
