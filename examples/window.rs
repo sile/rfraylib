@@ -19,6 +19,11 @@ fn main() -> anyhow::Result<()> {
         {
             let mut canvas = system.next_frame();
             canvas.clear_background(rfraylib::Color::GOLD);
+            for x in 10..20 {
+                for y in 10..20 {
+                    canvas.draw_pixel((x as f32, y as f32).into(), rfraylib::Color::RED);
+                }
+            }
         }
         if system.window().is_file_dropped() {
             println!("File dropped!");

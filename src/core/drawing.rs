@@ -1,3 +1,5 @@
+use crate::structs::Rectangle;
+use crate::texture::RenderTexture;
 use crate::{Position, Size};
 use std::os::raw::c_int;
 
@@ -98,6 +100,445 @@ pub trait Draw {
     {
         TextureCanvas::new(self, target)
     }
+
+    /// Draw a pixel.
+    fn draw_pixel(&mut self, position: Position, color: Color) {
+        unsafe { raylib4_sys::DrawPixelV(position.into(), color.into()) };
+    }
+
+    /// Draw a line.
+    fn draw_line(&mut self, start: Position, end: Position, color: Color) {
+        unsafe { raylib4_sys::DrawLineV(start.into(), end.into(), color.into()) };
+    }
+
+    /// Draw a line defining thickness.
+    fn draw_line_ex(&mut self, start: Position, end: Position, thick: f32, color: Color) {
+        unsafe { raylib4_sys::DrawLineEx(start.into(), end.into(), thick, color.into()) };
+    }
+
+    /// Draw a line using cubic-bezier curves in-out.
+    fn draw_line_bezier(&mut self, start: Position, end: Position, thick: f32, color: Color) {
+        unsafe { raylib4_sys::DrawLineBezier(start.into(), end.into(), thick, color.into()) };
+    }
+
+    //Draw line using quadratic bezier curves with a control point.
+    fn draw_line_bezier_quad(
+        &mut self,
+        start: Position,
+        end: Position,
+        control: Position,
+        thick: f32,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawLineBezierQuad(
+                start.into(),
+                end.into(),
+                control.into(),
+                thick,
+                color.into(),
+            )
+        };
+    }
+
+    // Draw line using cubic bezier curves with 2 control points.
+    fn draw_line_bezier_cubic(
+        &mut self,
+        start: Position,
+        end: Position,
+        start_control: Position,
+        end_control: Position,
+        thick: f32,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawLineBezierCubic(
+                start.into(),
+                end.into(),
+                start_control.into(),
+                end_control.into(),
+                thick,
+                color.into(),
+            )
+        };
+    }
+
+    /// Draw lines sequence.
+    fn draw_line_strip(&mut self, points: impl Iterator<Item = Position>, color: Color) {
+        let mut points = points.map(raylib4_sys::Vector2::from).collect::<Vec<_>>();
+        unsafe {
+            raylib4_sys::DrawLineStrip(points.as_mut_ptr(), points.len() as c_int, color.into())
+        };
+    }
+
+    /// Draw a color-filled circle.
+    fn draw_circle(&mut self, center: Position, radius: f32, color: Color) {
+        unsafe { raylib4_sys::DrawCircleV(center.into(), radius, color.into()) };
+    }
+
+    /// Draw a piece of a circle.
+    fn draw_circle_sector(
+        &mut self,
+        center: Position,
+        radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: usize,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawCircleSector(
+                center.into(),
+                radius,
+                start_angle,
+                end_angle,
+                segments as c_int,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw circle sector outline.
+    fn draw_circle_sector_lines(
+        &mut self,
+        center: Position,
+        radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: usize,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawCircleSectorLines(
+                center.into(),
+                radius,
+                start_angle,
+                end_angle,
+                segments as c_int,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw a gradient-filled circle.
+    fn draw_circle_gradient(
+        &mut self,
+        center: Position,
+        radius: f32,
+        color1: Color,
+        color2: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawCircleGradient(
+                center.x as c_int,
+                center.y as c_int,
+                radius,
+                color1.into(),
+                color2.into(),
+            );
+        }
+    }
+
+    /// Draw circle outline.
+    fn draw_circle_lines(&mut self, center: Position, radius: f32, color: Color) {
+        unsafe {
+            raylib4_sys::DrawCircleLines(center.x as c_int, center.y as c_int, radius, color.into())
+        };
+    }
+
+    /// Draw ellipse.
+    fn draw_ellipse(&mut self, center: Position, radius_h: f32, radius_v: f32, color: Color) {
+        unsafe {
+            raylib4_sys::DrawEllipse(
+                center.x as c_int,
+                center.y as c_int,
+                radius_h,
+                radius_v,
+                color.into(),
+            )
+        };
+    }
+
+    /// Draw ellipse outline.
+    fn draw_ellipse_lines(&mut self, center: Position, radius_h: f32, radius_v: f32, color: Color) {
+        unsafe {
+            raylib4_sys::DrawEllipseLines(
+                center.x as c_int,
+                center.y as c_int,
+                radius_h,
+                radius_v,
+                color.into(),
+            )
+        };
+    }
+
+    /// Draw ring.
+    fn draw_ring(
+        &mut self,
+        center: Position,
+        inner_radius: f32,
+        outer_radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: usize,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawRing(
+                center.into(),
+                inner_radius,
+                outer_radius,
+                start_angle,
+                end_angle,
+                segments as c_int,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw ring outline.
+    fn draw_ring_lines(
+        &mut self,
+        center: Position,
+        inner_radius: f32,
+        outer_radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: usize,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawRingLines(
+                center.into(),
+                inner_radius,
+                outer_radius,
+                start_angle,
+                end_angle,
+                segments as c_int,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw a color-filled rectangle.
+    fn draw_rectangle(&mut self, rectangle: Rectangle, color: Color) {
+        unsafe { raylib4_sys::DrawRectangleRec(rectangle.into(), color.into()) };
+    }
+
+    /// Draw a color-filled rectangle with pro parameters.
+    fn draw_rectangle_pro(
+        &mut self,
+        rectangle: Rectangle,
+        origin: Position,
+        rotation: f32,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawRectanglePro(rectangle.into(), origin.into(), rotation, color.into());
+        }
+    }
+
+    /// Draw a vertical-gradient-filled rectangle.
+    fn draw_rectangle_gradient_v(&mut self, rectangle: Rectangle, color1: Color, color2: Color) {
+        unsafe {
+            raylib4_sys::DrawRectangleGradientV(
+                rectangle.x as c_int,
+                rectangle.y as c_int,
+                rectangle.width as c_int,
+                rectangle.height as c_int,
+                color1.into(),
+                color2.into(),
+            );
+        }
+    }
+
+    /// Draw a horizontal-gradient-filled rectangle.
+    fn draw_rectangle_gradient_h(&mut self, rectangle: Rectangle, color1: Color, color2: Color) {
+        unsafe {
+            raylib4_sys::DrawRectangleGradientH(
+                rectangle.x as c_int,
+                rectangle.y as c_int,
+                rectangle.width as c_int,
+                rectangle.height as c_int,
+                color1.into(),
+                color2.into(),
+            );
+        }
+    }
+
+    /// Draw a gradient-filled rectangle with custom vertex colors.
+    fn draw_rectangle_gradient_ex(
+        &mut self,
+        rectangle: Rectangle,
+        color1: Color,
+        color2: Color,
+        color3: Color,
+        color4: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawRectangleGradientEx(
+                rectangle.into(),
+                color1.into(),
+                color2.into(),
+                color3.into(),
+                color4.into(),
+            );
+        }
+    }
+
+    /// Draw rectangle outline.
+    fn draw_rectangle_lines(&mut self, rectangle: Rectangle, color: Color) {
+        unsafe {
+            raylib4_sys::DrawRectangleLines(
+                rectangle.x as c_int,
+                rectangle.y as c_int,
+                rectangle.width as c_int,
+                rectangle.height as c_int,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw rectangle outline with extended parameters.
+    fn draw_rectangle_lines_ex(&mut self, rectangle: Rectangle, line_thick: f32, color: Color) {
+        unsafe {
+            raylib4_sys::DrawRectangleLinesEx(rectangle.into(), line_thick, color.into());
+        }
+    }
+
+    /// Draw rectangle with rounded edges.
+    fn draw_rectangle_rounded(
+        &mut self,
+        rectangle: Rectangle,
+        roundness: f32,
+        segments: usize,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawRectangleRounded(
+                rectangle.into(),
+                roundness,
+                segments as c_int,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw rectangle with rounded edges outline.
+    fn draw_rectangle_rounded_lines(
+        &mut self,
+        rectangle: Rectangle,
+        roundness: f32,
+        segments: usize,
+        line_thick: f32,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawRectangleRoundedLines(
+                rectangle.into(),
+                roundness,
+                segments as c_int,
+                line_thick,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw a color-filled triangle (vertex in counter-clockwise order!).
+    fn draw_triangle(&mut self, v1: Position, v2: Position, v3: Position, color: Color) {
+        unsafe {
+            raylib4_sys::DrawTriangle(v1.into(), v2.into(), v3.into(), color.into());
+        }
+    }
+
+    /// Draw triangle outline (vertex in counter-clockwise order!).
+    fn draw_triangle_lines(&mut self, v1: Position, v2: Position, v3: Position, color: Color) {
+        unsafe {
+            raylib4_sys::DrawTriangleLines(v1.into(), v2.into(), v3.into(), color.into());
+        }
+    }
+
+    /// Draw a triangle fan defined by points (first vertex is the center).
+    fn draw_triangle_fan(&mut self, points: impl Iterator<Item = Position>, color: Color) {
+        let mut points = points.map(raylib4_sys::Vector2::from).collect::<Vec<_>>();
+        unsafe {
+            raylib4_sys::DrawTriangleFan(points.as_mut_ptr(), points.len() as c_int, color.into());
+        }
+    }
+
+    /// Draw a triangle strip defined by points.
+    fn draw_triangle_strip(&mut self, points: impl Iterator<Item = Position>, color: Color) {
+        let mut points = points.map(raylib4_sys::Vector2::from).collect::<Vec<_>>();
+        unsafe {
+            raylib4_sys::DrawTriangleStrip(
+                points.as_mut_ptr(),
+                points.len() as c_int,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw a regular polygon (Vector version).
+    fn draw_poly(
+        &mut self,
+        center: Position,
+        sides: usize,
+        radius: f32,
+        rotation: f32,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawPoly(
+                center.into(),
+                sides as c_int,
+                radius,
+                rotation,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw a polygon outline of n sides.
+    fn draw_poly_lines(
+        &mut self,
+        center: Position,
+        sides: usize,
+        radius: f32,
+        rotation: f32,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawPolyLines(
+                center.into(),
+                sides as c_int,
+                radius,
+                rotation,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw a polygon outline of n sides with extended parameters.
+    fn draw_poly_lines_ex(
+        &mut self,
+        center: Position,
+        sides: usize,
+        radius: f32,
+        rotation: f32,
+        line_thick: f32,
+        color: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawPolyLinesEx(
+                center.into(),
+                sides as c_int,
+                radius,
+                rotation,
+                line_thick,
+                color.into(),
+            );
+        }
+    }
 }
 
 // CustomCameraCanvas
@@ -184,7 +625,7 @@ pub struct TextureCanvas<'a, 'b, T> {
 
 impl<'a, 'b, T> TextureCanvas<'a, 'b, T> {
     pub(crate) fn new(parent: &'a T, target: &'b RenderTexture) -> Self {
-        unsafe { raylib4_sys::BeginTextureMode(target.0) };
+        unsafe { raylib4_sys::BeginTextureMode(target.inner) };
         Self { parent, target }
     }
 }
@@ -196,9 +637,6 @@ impl<'a, 'b, T> Drop for TextureCanvas<'a, 'b, T> {
         unsafe { raylib4_sys::EndTextureMode() };
     }
 }
-
-#[derive(Debug)]
-pub struct RenderTexture(raylib4_sys::RenderTexture);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum BlendMode {

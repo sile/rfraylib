@@ -1,15 +1,17 @@
 use crate::core::cursor::Cursor;
-use crate::core::drawing::{RenderTexture, TextureCanvas, WindowCanvas};
+use crate::core::drawing::{TextureCanvas, WindowCanvas};
 use crate::core::input::gamepad::{Gamepad, GamepadButton};
 use crate::core::input::mouse::Mouse;
 use crate::core::input::touch::Touch;
 use crate::core::input::Keyboard;
 use crate::core::monitor::Monitors;
 use crate::core::window::{ConfigFlag, Window};
-use crate::structs::Size;
+use crate::structs::{Rectangle, Size};
+use crate::texture::{RenderTexture, Texture};
 use std::collections::BTreeSet;
 use std::os::raw::{c_char, c_int};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 static IS_SYSTEM_INITIALIZED: AtomicBool = AtomicBool::new(false);
@@ -102,6 +104,7 @@ impl SystemBuilder {
             gamepads: (0..MAX_GAMEPADS).map(|index| Gamepad { index }).collect(),
             mouse: Mouse(()),
             touch: Touch(()),
+            shapes_texture: None,
         };
 
         if let Some(x) = self.target_fps {
@@ -132,6 +135,7 @@ pub struct System {
     gamepads: Vec<Gamepad>,
     mouse: Mouse,
     touch: Touch,
+    shapes_texture: Option<Arc<Texture>>,
 }
 
 impl System {
@@ -251,6 +255,15 @@ impl System {
         let url = std::ffi::CString::new(url)?;
         unsafe { raylib4_sys::OpenURL(url.as_ptr()) };
         Ok(())
+    }
+
+    /// Set texture and rectangle to be used on shapes drawing.
+    ///
+    /// NOTE: It can be useful when using basic shapes and one single font,
+    /// defining a font char white rectangle would allow drawing everything in a single draw call.
+    pub fn set_shapes_texture(&mut self, texture: Arc<Texture>, source: Rectangle) {
+        unsafe { raylib4_sys::SetShapesTexture(texture.to_raw(), source.into()) };
+        self.shapes_texture = Some(texture);
     }
 }
 

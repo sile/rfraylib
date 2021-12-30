@@ -72,3 +72,5 @@ Omitted functions:
   - SetCameraAltControl
   - SetCameraSmoothZoomControl
   - SetCameraMoveControls
+- models
+  - all functions
