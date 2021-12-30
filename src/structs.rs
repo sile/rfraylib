@@ -17,6 +17,12 @@ impl From<raylib4_sys::Vector2> for Position {
     }
 }
 
+impl From<Position> for raylib4_sys::Vector2 {
+    fn from(v: Position) -> Self {
+        Self { x: v.x, y: v.y }
+    }
+}
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Size {

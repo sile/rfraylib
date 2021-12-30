@@ -6,3 +6,9 @@ Omitted functions:
   - GetWindowHandle
   - GetRandomValue
   - SetRandomSeed
+  - BeginMode3D
+  - EndMode3D
+  - BeginShaderMode
+  - EndShaderMode
+  - BeginVrStereoMode
+  - EndVrStereoMode

@@ -1,4 +1,5 @@
 use crate::core::cursor::Cursor;
+use crate::core::drawing::{RenderTexture, TextureCanvas, WindowCanvas};
 use crate::core::monitor::Monitors;
 use crate::core::window::{ConfigFlag, Window};
 use crate::structs::Size;
@@ -123,5 +124,19 @@ impl System {
 
     pub fn cursor_mut(&mut self) -> &mut Cursor {
         &mut self.cursor
+    }
+
+    /// Setup canvas (framebuffer) to start drawing.
+    ///
+    /// On drop: End canvas drawing and swap buffers (double buffering).
+    pub fn next_frame(&mut self) -> WindowCanvas {
+        WindowCanvas::new(self)
+    }
+
+    pub fn create_texture_canvas<'a, 'b>(
+        &'a mut self,
+        target: &'b mut RenderTexture,
+    ) -> TextureCanvas<'a, 'b, Self> {
+        TextureCanvas::new(self, target)
     }
 }
