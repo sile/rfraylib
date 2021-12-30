@@ -14,6 +14,7 @@ fn main() -> anyhow::Result<()> {
             monitor.get_physical_size(),
         );
     }
+
     while !system.window().should_close() {
         {
             let mut canvas = system.next_frame();
@@ -27,6 +28,9 @@ fn main() -> anyhow::Result<()> {
         }
         for k in system.keyboard_mut().take_pressed_keys() {
             println!("Pressed Key: {:?}", k);
+        }
+        if let Some(b) = system.get_gamepad_button_pressed() {
+            println!("Gamepad: {:?}", b);
         }
     }
     Ok(())

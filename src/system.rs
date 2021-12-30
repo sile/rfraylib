@@ -1,5 +1,6 @@
 use crate::core::cursor::Cursor;
 use crate::core::drawing::{RenderTexture, TextureCanvas, WindowCanvas};
+use crate::core::input::gamepad::{Gamepad, GamepadButton};
 use crate::core::input::Keyboard;
 use crate::core::monitor::Monitors;
 use crate::core::window::{ConfigFlag, Window};
@@ -90,11 +91,13 @@ impl SystemBuilder {
             );
         }
 
+        const MAX_GAMEPADS: u32 = 8; // TODO: Make configurable.
         let mut system = System {
             window: Window(()),
             monitors: Monitors(()),
             cursor: Cursor(()),
             keyboard: Keyboard(()),
+            gamepads: (0..MAX_GAMEPADS).map(|index| Gamepad { index }).collect(),
         };
 
         if let Some(x) = self.target_fps {
@@ -122,6 +125,7 @@ pub struct System {
     monitors: Monitors,
     cursor: Cursor,
     keyboard: Keyboard,
+    gamepads: Vec<Gamepad>,
 }
 
 impl System {
@@ -155,6 +159,26 @@ impl System {
 
     pub fn keyboard_mut(&mut self) -> &mut Keyboard {
         &mut self.keyboard
+    }
+
+    pub fn gamepads(&self) -> impl Iterator<Item = &Gamepad> {
+        self.gamepads.iter().filter(|x| x.is_available())
+    }
+
+    pub fn gamepads_mut(&mut self) -> impl Iterator<Item = &mut Gamepad> {
+        self.gamepads.iter_mut().filter(|x| x.is_available())
+    }
+
+    /// Get the last gamepad button pressed.
+    pub fn get_gamepad_button_pressed(&self) -> Option<GamepadButton> {
+        Gamepad::get_button_pressed()
+    }
+
+    /// Set internal gamepad mappings (SDL_GameControllerDB).
+    pub fn set_mappings(&mut self, mappings: &str) -> Result<(), std::ffi::NulError> {
+        let mappings = std::ffi::CString::new(mappings)?;
+        unsafe { raylib4_sys::SetGamepadMappings(mappings.as_ptr()) };
+        Ok(())
     }
 
     /// Setup canvas (framebuffer) to start drawing.
