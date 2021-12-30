@@ -39,3 +39,26 @@ Omitted functions:
   - SetSaveFileDataCallback
   - SetLoadFileTextCallback
   - SetSaveFileTextCallback
+  - LoadFileData
+  - UnloadFileData
+  - SaveFileData
+  - LoadFileText
+  - UnloadFileText
+  - SaveFileText
+  - FileExists
+  - DirectoryExists
+  - IsFileExtension
+  - GetFileExtension
+  - GetFileName
+  - GetFileNameWithoutExt
+  - GetDirectoryPath
+  - GetPrevDirectoryPath
+  - GetWorkingDirectory
+  - GetDirectoryFiles
+  - ClearDirectoryFiles
+  - ChangeDirectory
+  - GetFileModTime
+  - CompressData
+  - DecompressData
+  - EncodeDataBase64
+  - DecodeDataBase64

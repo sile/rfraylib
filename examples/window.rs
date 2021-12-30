@@ -15,8 +15,13 @@ fn main() -> anyhow::Result<()> {
         );
     }
     while !system.window().should_close() {
-        let mut canvas = system.next_frame();
-        canvas.clear_background(rfraylib::Color::GOLD);
+        {
+            let mut canvas = system.next_frame();
+            canvas.clear_background(rfraylib::Color::GOLD);
+        }
+        if system.window().is_file_dropped() {
+            println!("File dropped!");
+        }
     }
     Ok(())
 }

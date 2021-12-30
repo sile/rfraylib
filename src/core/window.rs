@@ -1,7 +1,8 @@
 //! Window-related functions.
 use crate::structs::{Position, Size};
 use std::ffi::CStr;
-use std::os::raw::c_int;
+use std::os::raw::{c_char, c_int};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ScaleDpiFactor {
@@ -185,6 +186,16 @@ impl Window {
     pub fn get_clipboard_text(&self) -> Result<&str, std::str::Utf8Error> {
         unsafe { CStr::from_ptr(raylib4_sys::GetClipboardText()) }.to_str()
     }
+
+    /// Check if a file has been dropped into window.
+    pub fn is_file_dropped(&self) -> bool {
+        unsafe { raylib4_sys::IsFileDropped() }
+    }
+
+    /// Get dropped files names (memory should be freed).
+    pub fn get_dropped_files(&self) -> DroppedFiles {
+        DroppedFiles::new(self)
+    }
 }
 
 impl Drop for Window {
@@ -192,5 +203,47 @@ impl Drop for Window {
         unsafe {
             raylib4_sys::CloseWindow();
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct DroppedFiles<'a> {
+    i: usize,
+    count: usize,
+    files: *mut *mut c_char,
+
+    #[allow(dead_code)]
+    window: &'a Window,
+}
+
+impl<'a> DroppedFiles<'a> {
+    fn new(window: &'a Window) -> Self {
+        let mut count = 0;
+        let files = unsafe { raylib4_sys::GetDroppedFiles(&mut count) };
+        Self {
+            i: 0,
+            count: count as usize,
+            files,
+            window,
+        }
+    }
+}
+
+impl<'a> Iterator for DroppedFiles<'a> {
+    type Item = Result<PathBuf, std::str::Utf8Error>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.i == self.count {
+            return None;
+        };
+        let file = unsafe { &*std::ptr::slice_from_raw_parts(self.files, self.count) }[self.i];
+        self.i += 1;
+        Some(unsafe { CStr::from_ptr(file) }.to_str().map(PathBuf::from))
+    }
+}
+
+impl<'a> Drop for DroppedFiles<'a> {
+    fn drop(&mut self) {
+        unsafe { raylib4_sys::ClearDroppedFiles() };
     }
 }
