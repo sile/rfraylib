@@ -64,3 +64,11 @@ Omitted functions:
   - DecodeDataBase64
   - SaveStorageValue
   - LoadStorageValue
+  - GetMouseX
+  - GetMouseY
+  - SetCameraMode
+  - UpdateCamera
+  - SetCameraPanControl
+  - SetCameraAltControl
+  - SetCameraSmoothZoomControl
+  - SetCameraMoveControls

@@ -32,6 +32,9 @@ fn main() -> anyhow::Result<()> {
         if let Some(b) = system.get_gamepad_button_pressed() {
             println!("Gamepad: {:?}", b);
         }
+        if system.mouse().get_delta() != (0.0, 0.0).into() {
+            println!("Mouse: {:?}", system.mouse().get_position());
+        }
     }
     Ok(())
 }
