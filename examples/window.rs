@@ -1,6 +1,8 @@
 use rfraylib::Draw;
 
 fn main() -> anyhow::Result<()> {
+    env_logger::init();
+
     let mut system = rfraylib::SystemBuilder::new().build()?;
     for monitor in system.monitors().iter() {
         println!(

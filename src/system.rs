@@ -4,7 +4,9 @@ use crate::core::monitor::Monitors;
 use crate::core::window::{ConfigFlag, Window};
 use crate::structs::Size;
 use std::collections::BTreeSet;
+use std::os::raw::{c_char, c_int};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 
 static IS_SYSTEM_INITIALIZED: AtomicBool = AtomicBool::new(false);
 
@@ -26,6 +28,7 @@ pub struct SystemBuilder {
     window_size: Size,
     window_title: String,
     config_flags: BTreeSet<ConfigFlag>,
+    target_fps: Option<usize>,
 }
 
 impl SystemBuilder {
@@ -54,12 +57,22 @@ impl SystemBuilder {
         self
     }
 
+    pub fn target_fps(&mut self, fps: usize) -> &mut Self {
+        self.target_fps = Some(fps);
+        self
+    }
+
     pub fn build(&self) -> Result<System, SystemBuildError> {
         if IS_SYSTEM_INITIALIZED.swap(true, Ordering::SeqCst) {
             return Err(SystemBuildError::AlreadyInitialized);
         }
         if unsafe { raylib4_sys::IsWindowReady() } {
             return Err(SystemBuildError::AlreadyInitialized);
+        }
+
+        unsafe {
+            raylib4_sys::SetTraceLogLevel(raylib4_sys::TraceLogLevel_LOG_ALL as c_int);
+            raylib4_sys::SetTraceLogCallback(Some(trace_log_callback));
         }
 
         // Initialize window.
@@ -76,11 +89,17 @@ impl SystemBuilder {
             );
         }
 
-        Ok(System {
+        let mut system = System {
             window: Window(()),
             monitors: Monitors(()),
             cursor: Cursor(()),
-        })
+        };
+
+        if let Some(x) = self.target_fps {
+            system.set_target_fps(x);
+        }
+
+        Ok(system)
     }
 }
 
@@ -90,6 +109,7 @@ impl Default for SystemBuilder {
             window_size: Self::DEFAULT_WINDOW_SISE,
             window_title: Self::DEFAULT_WINDOW_TITLE.to_owned(),
             config_flags: Default::default(),
+            target_fps: None,
         }
     }
 }
@@ -138,5 +158,72 @@ impl System {
         target: &'b mut RenderTexture,
     ) -> TextureCanvas<'a, 'b, Self> {
         TextureCanvas::new(self, target)
+    }
+
+    /// Set target FPS (maximum).
+    pub fn set_target_fps(&mut self, fps: usize) {
+        unsafe { raylib4_sys::SetTargetFPS(fps as c_int) };
+    }
+
+    /// Get current FPS.
+    pub fn get_fps(&self) -> usize {
+        unsafe { raylib4_sys::GetFPS() as usize }
+    }
+
+    /// Get time in seconds for last frame drawn (delta time).
+    pub fn get_frame_time(&self) -> Duration {
+        let seconds = unsafe { raylib4_sys::GetFrameTime() };
+        Duration::from_secs_f32(seconds)
+    }
+
+    /// Get elapsed time in seconds since InitWindow().
+    pub fn get_time(&self) -> Duration {
+        let seconds = unsafe { raylib4_sys::GetTime() };
+        Duration::from_secs_f64(seconds)
+    }
+
+    /// Takes a screenshot of current screen (filename extension defines format).
+    pub fn take_screenshot(&self, path: &str) -> Result<(), std::ffi::NulError> {
+        let path = std::ffi::CString::new(path)?;
+        unsafe { raylib4_sys::TakeScreenshot(path.as_ptr()) };
+        Ok(())
+    }
+}
+
+extern "C" fn trace_log_callback(
+    log_level: c_int,
+    text: *const c_char,
+    args: *mut raylib4_sys::__va_list_tag,
+) {
+    let filter = match log::max_level() {
+        log::LevelFilter::Off => raylib4_sys::TraceLogLevel_LOG_NONE,
+        log::LevelFilter::Error => raylib4_sys::TraceLogLevel_LOG_ERROR,
+        log::LevelFilter::Warn => raylib4_sys::TraceLogLevel_LOG_WARNING,
+        log::LevelFilter::Info => raylib4_sys::TraceLogLevel_LOG_INFO,
+        log::LevelFilter::Debug => raylib4_sys::TraceLogLevel_LOG_DEBUG,
+        log::LevelFilter::Trace => raylib4_sys::TraceLogLevel_LOG_TRACE,
+    };
+    if log_level < filter as c_int {
+        return;
+    }
+
+    let result = unsafe { vsprintf::vsprintf(text, args) };
+    match result {
+        Err(e) => {
+            log::warn!("`vsprintf()` failed: {}", e);
+        }
+        Ok(s) => {
+            if log_level >= raylib4_sys::TraceLogLevel_LOG_ERROR as c_int {
+                log::error!("{}", s);
+            } else if log_level >= raylib4_sys::TraceLogLevel_LOG_WARNING as c_int {
+                log::warn!("{}", s);
+            } else if log_level >= raylib4_sys::TraceLogLevel_LOG_INFO as c_int {
+                log::info!("{}", s);
+            } else if log_level >= raylib4_sys::TraceLogLevel_LOG_DEBUG as c_int {
+                log::debug!("{}", s);
+            } else {
+                log::trace!("{}", s);
+            }
+        }
     }
 }

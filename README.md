@@ -12,3 +12,30 @@ Omitted functions:
   - EndShaderMode
   - BeginVrStereoMode
   - EndVrStereoMode
+  - LoadVrStereoConfig
+  - UnloadVrStereoConfig
+  - LoadShader
+  - LoadShaderFromMemory
+  - GetShaderLocation
+  - GetShaderLocationAttrib
+  - SetShaderValue
+  - SetShaderValueV
+  - SetShaderValueMatrix
+  - SetShaderValueTexture
+  - UnloadShader
+  - GetMouseRay
+  - GetCameraMatrix
+  - GetCameraMatrix2D
+  - GetWorldToScreen
+  - GetWorldToScreenEx
+  - GetRandomValue
+  - SetRandomSeed
+  - TraceLog
+  - MemAlloc
+  - MemRealloc
+  - MemFree
+  - SetTraceLogCallback
+  - SetLoadFileDataCallback
+  - SetSaveFileDataCallback
+  - SetLoadFileTextCallback
+  - SetSaveFileTextCallback

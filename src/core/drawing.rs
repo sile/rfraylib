@@ -64,7 +64,7 @@ pub trait Draw {
     }
 
     /// Begin 2D mode with custom camera (2D).
-    fn with_camera(&mut self, camera: Camera2d) -> WithCamera<Self>
+    fn with_camera(&mut self, camera: Camera) -> WithCamera<Self>
     where
         Self: Sized,
     {
@@ -108,7 +108,7 @@ pub struct WithCamera<'a, T> {
 }
 
 impl<'a, T> WithCamera<'a, T> {
-    fn new(canvas: &'a T, camera: Camera2d) -> Self {
+    fn new(canvas: &'a T, camera: Camera) -> Self {
         unsafe { raylib4_sys::BeginMode2D(camera.into()) };
         Self { canvas }
     }
@@ -144,15 +144,27 @@ impl<'a> Drop for WindowCanvas<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct Camera2d {
+pub struct Camera {
     pub offset: Position,
     pub target: Position,
     pub rotation: f32,
     pub zoom: f32,
 }
 
-impl From<Camera2d> for raylib4_sys::Camera2D {
-    fn from(x: Camera2d) -> Self {
+impl Camera {
+    /// Get the screen space position for a 2d camera world space position.
+    pub fn world_to_screen(&self, position: Position) -> Position {
+        unsafe { raylib4_sys::GetWorldToScreen2D(position.into(), self.clone().into()) }.into()
+    }
+
+    /// Get the world space position for a 2d camera screen space position.
+    pub fn screen_to_world(&self, position: Position) -> Position {
+        unsafe { raylib4_sys::GetScreenToWorld2D(position.into(), self.clone().into()) }.into()
+    }
+}
+
+impl From<Camera> for raylib4_sys::Camera2D {
+    fn from(x: Camera) -> Self {
         Self {
             offset: x.offset.into(),
             target: x.target.into(),
