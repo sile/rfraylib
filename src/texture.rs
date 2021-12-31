@@ -290,7 +290,7 @@ pub enum TextureWrap {
 }
 
 #[derive(Debug)]
-pub struct Image(raylib4_sys::Image);
+pub struct Image(pub(crate) raylib4_sys::Image); // TODO
 
 impl Image {
     pub fn size(&self) -> Size {
