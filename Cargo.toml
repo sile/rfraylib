@@ -15,3 +15,7 @@ vsprintf = "2"
 [dev-dependencies]
 anyhow = "1"
 env_logger = "0.9"
+
+[[example]]
+name = "text_input_box"
+path = "examples/text/text_input_box.rs"

@@ -76,9 +76,9 @@ impl Font {
     }
 
     /// Measure string width for default font.
-    pub fn measure_text(text: &str, font_size: usize) -> Result<usize, std::ffi::NulError> {
+    pub fn measure_text(text: &str, font_size: usize) -> Result<f32, std::ffi::NulError> {
         let text = CString::new(text)?;
-        Ok(unsafe { raylib4_sys::MeasureText(text.as_ptr(), font_size as c_int) as usize })
+        Ok(unsafe { raylib4_sys::MeasureText(text.as_ptr(), font_size as c_int) as f32 })
     }
 
     /// Measure string size for Font.
