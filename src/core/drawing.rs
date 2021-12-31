@@ -1,7 +1,7 @@
 use crate::structs::Rectangle;
-use crate::texture::RenderTexture;
+use crate::texture::{PixelFormat, RenderTexture};
 use crate::{Position, Size};
-use std::os::raw::c_int;
+use std::os::raw::{c_int, c_void};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Color {
@@ -45,6 +45,71 @@ impl Color {
 
     pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
         Self { r, g, b, a }
+    }
+
+    /// Returns color with alpha applied, alpha goes from 0.0f to 1.0f.
+    pub fn fade(self, alpha: f32) -> Self {
+        unsafe { raylib4_sys::Fade(self.into(), alpha) }.into()
+    }
+
+    /// Returns hexadecimal value for a Color.
+    pub fn to_int(self) -> u32 {
+        unsafe { raylib4_sys::ColorToInt(self.into()) as u32 }
+    }
+
+    /// Returns Color normalized as float [0..1].
+    pub fn normalize(self) -> (f32, f32, f32, f32) {
+        let v = unsafe { raylib4_sys::ColorNormalize(self.into()) };
+        (v.x, v.y, v.z, v.w)
+    }
+
+    /// Returns Color from normalized values [0..1].
+    pub fn from_normalized((x, y, z, w): (f32, f32, f32, f32)) -> Self {
+        unsafe { raylib4_sys::ColorFromNormalized(raylib4_sys::Vector4 { x, y, z, w }).into() }
+    }
+
+    /// Returns HSV values for a Color, hue [0..360], saturation/value [0..1].
+    pub fn to_hsv(self) -> (f32, f32, f32) {
+        let v = unsafe { raylib4_sys::ColorToHSV(self.into()) };
+        (v.x, v.y, v.z)
+    }
+
+    /// Returns a Color from HSV values, hue [0..360], saturation/value [0..1].
+    pub fn from_hsv(hue: f32, saturation: f32, value: f32) -> Self {
+        unsafe { raylib4_sys::ColorFromHSV(hue, saturation, value).into() }
+    }
+
+    /// Returns color with alpha applied, alpha goes from 0.0f to 1.0f.
+    pub fn alpha(self, alpha: f32) -> Self {
+        unsafe { raylib4_sys::ColorAlpha(self.into(), alpha).into() }
+    }
+
+    /// Returns src alpha-blended into dst color with tint.
+    pub fn alpha_blend(self, src: Self, tint: Self) -> Self {
+        unsafe { raylib4_sys::ColorAlphaBlend(self.into(), src.into(), tint.into()).into() }
+    }
+
+    /// Get Color structure from hexadecimal value.
+    pub fn from_hexadecimal(hex_value: u32) -> Self {
+        unsafe { raylib4_sys::GetColor(hex_value).into() }
+    }
+
+    /// Get Color from a source pixel pointer of certain format.
+    pub fn get_pixel_color(src: &[u8], format: PixelFormat) -> Self {
+        // TODO: check size
+        unsafe { raylib4_sys::GetPixelColor(src.as_ptr() as *mut c_void, format as c_int).into() }
+    }
+
+    /// Set color formatted into destination pixel pointer.
+    pub fn set_pixel_color(self, dst: &mut [u8], format: PixelFormat) {
+        // TODO: check size
+        unsafe {
+            raylib4_sys::SetPixelColor(
+                dst.as_mut_ptr() as *mut c_void,
+                self.into(),
+                format as c_int,
+            )
+        };
     }
 }
 

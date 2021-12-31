@@ -777,3 +777,13 @@ pub enum PixelFormat {
     CompressedAstc4x4Rgba = 20,
     CompressedAstc8x8Rgba = 21,
 }
+
+impl PixelFormat {
+    /// Get pixel data size in bytes for certain format.
+    pub fn get_pixel_data_size(self, size: Size) -> usize {
+        unsafe {
+            raylib4_sys::GetPixelDataSize(size.width as c_int, size.height as c_int, self as c_int)
+                as usize
+        }
+    }
+}
