@@ -1,6 +1,8 @@
 use crate::structs::Rectangle;
+use crate::text::Font;
 use crate::texture::{PixelFormat, RenderTexture};
 use crate::{Position, Size};
+use std::ffi::CString;
 use std::os::raw::{c_int, c_void};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -197,7 +199,7 @@ pub trait Draw {
         unsafe { raylib4_sys::DrawLineBezier(start.into(), end.into(), thick, color.into()) };
     }
 
-    //Draw line using quadratic bezier curves with a control point.
+    /// Draw line using quadratic bezier curves with a control point.
     fn draw_line_bezier_quad(
         &mut self,
         start: Position,
@@ -217,7 +219,7 @@ pub trait Draw {
         };
     }
 
-    // Draw line using cubic bezier curves with 2 control points.
+    /// Draw line using cubic bezier curves with 2 control points.
     fn draw_line_bezier_cubic(
         &mut self,
         start: Position,
@@ -612,6 +614,97 @@ pub trait Draw {
                 rotation,
                 line_thick,
                 color.into(),
+            );
+        }
+    }
+
+    /// Draw current FPS.
+    fn draw_fps(&mut self, position: Position) {
+        unsafe { raylib4_sys::DrawFPS(position.x as c_int, position.y as c_int) };
+    }
+
+    /// Draw text (using default font).
+    fn draw_text(
+        &mut self,
+        text: &str,
+        position: Position,
+        font_size: usize,
+        color: Color,
+    ) -> Result<(), std::ffi::NulError> {
+        let text = CString::new(text)?;
+        unsafe {
+            raylib4_sys::DrawText(
+                text.as_ptr(),
+                position.x as c_int,
+                position.y as c_int,
+                font_size as c_int,
+                color.into(),
+            );
+        }
+        Ok(())
+    }
+
+    /// Draw text using font and additional parameters.
+    fn draw_text_ex(
+        &mut self,
+        font: &Font,
+        text: &str,
+        position: Position,
+        font_size: f32,
+        spacing: f32,
+        tint: Color,
+    ) -> Result<(), std::ffi::NulError> {
+        let text = CString::new(text)?;
+        unsafe {
+            raylib4_sys::DrawTextEx(
+                font.0,
+                text.as_ptr(),
+                position.into(),
+                font_size,
+                spacing,
+                tint.into(),
+            );
+        }
+        Ok(())
+    }
+
+    /// Draw text using Font and pro parameters (rotation).
+    fn draw_text_pro(
+        &mut self,
+        font: &Font,
+        text: &str,
+        position: Position,
+        origin: Position,
+        rotation: f32,
+        font_size: f32,
+        spacing: f32,
+        tint: Color,
+    ) -> Result<(), std::ffi::NulError> {
+        let text = CString::new(text)?;
+        unsafe {
+            raylib4_sys::DrawTextPro(
+                font.0,
+                text.as_ptr(),
+                position.into(),
+                origin.into(),
+                rotation,
+                font_size,
+                spacing,
+                tint.into(),
+            );
+        }
+        Ok(())
+    }
+
+    /// Draw one character (codepoint).
+    fn draw_char(&mut self, font: &Font, c: char, position: Position, font_size: f32, tint: Color) {
+        unsafe {
+            raylib4_sys::DrawTextCodepoint(
+                font.0,
+                u32::from(c) as c_int,
+                position.into(),
+                font_size,
+                tint.into(),
             );
         }
     }

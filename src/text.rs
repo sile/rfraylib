@@ -1,4 +1,4 @@
-use crate::structs::Rectangle;
+use crate::structs::{Rectangle, Size};
 use crate::texture::Image;
 use crate::Color;
 use std::ffi::CString;
@@ -6,7 +6,7 @@ use std::os::raw::c_int;
 use std::path::Path;
 
 #[derive(Debug)]
-pub struct Font(raylib4_sys::Font);
+pub struct Font(pub(crate) raylib4_sys::Font); // TODO
 
 impl Font {
     /// Load font from file into GPU memory (VRAM).
@@ -74,6 +74,43 @@ impl Font {
     pub fn is_default(&self) -> bool {
         self.0.texture.id == Self::default().0.texture.id
     }
+
+    /// Measure string width for default font.
+    pub fn measure_text(text: &str, font_size: usize) -> Result<usize, std::ffi::NulError> {
+        let text = CString::new(text)?;
+        Ok(unsafe { raylib4_sys::MeasureText(text.as_ptr(), font_size as c_int) as usize })
+    }
+
+    /// Measure string size for Font.
+    pub fn measure_text_ex(
+        &self,
+        text: &str,
+        font_size: f32,
+        spacing: f32,
+    ) -> Result<Size, std::ffi::NulError> {
+        let text = CString::new(text)?;
+        Ok(unsafe { raylib4_sys::MeasureTextEx(self.0, text.as_ptr(), font_size, spacing).into() })
+    }
+
+    /// Get glyph index position in font for a codepoint (unicode character), fallback to '?' if not found.
+    pub fn get_glyph_index(&self, c: char) -> usize {
+        // TODO: error check
+        unsafe { raylib4_sys::GetGlyphIndex(self.0, u32::from(c) as c_int) as usize }
+    }
+
+    /// Get glyph font info data for a codepoint (unicode character), fallback to '?' if not found.
+    pub fn get_glyph_info(&self, c: char) -> GlyphInfoRef {
+        let i = self.get_glyph_index(c);
+        GlyphInfoRef(
+            &unsafe { &*std::ptr::slice_from_raw_parts(self.0.glyphs, self.0.glyphCount as usize) }
+                [i],
+        )
+    }
+
+    /// Get glyph rectangle in font atlas for a codepoint (unicode character), fallback to '?' if not found.
+    pub fn get_glyph_atlas_rec(&self, c: char) -> Rectangle {
+        unsafe { raylib4_sys::GetGlyphAtlasRec(self.0, u32::from(c) as c_int).into() }
+    }
 }
 
 impl Default for Font {
@@ -87,6 +124,9 @@ impl Drop for Font {
         unsafe { raylib4_sys::UnloadFont(self.0) };
     }
 }
+
+#[derive(Debug)]
+pub struct GlyphInfoRef<'a>(&'a raylib4_sys::GlyphInfo);
 
 #[derive(Debug)]
 pub struct FondData(Vec<raylib4_sys::GlyphInfo>);

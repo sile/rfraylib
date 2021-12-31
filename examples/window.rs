@@ -24,6 +24,7 @@ fn main() -> anyhow::Result<()> {
                     canvas.draw_pixel((x as f32, y as f32).into(), rfraylib::Color::RED);
                 }
             }
+            canvas.draw_fps((100.0, 100.0).into());
         }
         if system.window().is_file_dropped() {
             println!("File dropped!");

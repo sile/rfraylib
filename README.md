@@ -72,5 +72,27 @@ Omitted functions:
   - SetCameraAltControl
   - SetCameraSmoothZoomControl
   - SetCameraMoveControls
+- text
+  - LoadCodepoints
+  - UnloadCodepoints
+  - GetCodepointCount
+  - GetCodepoint
+  - CodepointToUTF8
+  - TextCodepointsToUTF8
+  - TextCopy
+  - TextIsEqual
+  - TextLength
+  - TextFormat
+  - TextSubtext
+  - TextReplace
+  - TextInsert
+  - TextJoin
+  - TextSplit
+  - TextAppend
+  - TextFindIndex
+  - TextToUpper
+  - TextToLower
+  - TextToPascal
+  - TextToInteger
 - models
   - all functions
