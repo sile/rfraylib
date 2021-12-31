@@ -388,13 +388,6 @@ impl Image {
             .unwrap_or(false)
     }
 
-    /// Export image as code file defining an array of bytes, returns true on success.
-    pub fn export_as_code<P: AsRef<Path>>(&self, path: P) -> bool {
-        path_to_cstring(path)
-            .map(|path| unsafe { raylib4_sys::ExportImageAsCode(self.0, path.as_ptr()) })
-            .unwrap_or(false)
-    }
-
     /// Generate image: plain color.
     pub fn generate_color(size: Size, color: Color) -> Self {
         Self(unsafe {

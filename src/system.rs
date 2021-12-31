@@ -1,3 +1,4 @@
+use crate::audio::AudioDevice;
 use crate::core::cursor::Cursor;
 use crate::core::drawing::{TextureCanvas, WindowCanvas};
 use crate::core::input::gamepad::{Gamepad, GamepadButton};
@@ -75,6 +76,9 @@ impl SystemBuilder {
         if unsafe { raylib4_sys::IsWindowReady() } {
             return Err(SystemBuildError::AlreadyInitialized);
         }
+        if unsafe { raylib4_sys::IsAudioDeviceReady() } {
+            return Err(SystemBuildError::AlreadyInitialized);
+        }
 
         unsafe {
             raylib4_sys::SetTraceLogLevel(raylib4_sys::TraceLogLevel_LOG_ALL as c_int);
@@ -104,6 +108,7 @@ impl SystemBuilder {
             gamepads: (0..MAX_GAMEPADS).map(|index| Gamepad { index }).collect(),
             mouse: Mouse(()),
             touch: Touch(()),
+            audio_device: AudioDevice::new(),
             shapes_texture: None,
         };
 
@@ -135,6 +140,7 @@ pub struct System {
     gamepads: Vec<Gamepad>,
     mouse: Mouse,
     touch: Touch,
+    audio_device: AudioDevice,
     shapes_texture: Option<Arc<Texture>>,
 }
 
@@ -193,6 +199,14 @@ impl System {
 
     pub fn touch_mut(&mut self) -> &mut Touch {
         &mut self.touch
+    }
+
+    pub fn audio_device(&self) -> &AudioDevice {
+        &self.audio_device
+    }
+
+    pub fn audio_device_mut(&mut self) -> &mut AudioDevice {
+        &mut self.audio_device
     }
 
     /// Get the last gamepad button pressed.

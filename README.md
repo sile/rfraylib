@@ -73,6 +73,7 @@ Omitted functions:
   - SetCameraSmoothZoomControl
   - SetCameraMoveControls
 - text
+  - ExportImageAsCode
   - LoadCodepoints
   - UnloadCodepoints
   - GetCodepointCount
@@ -96,3 +97,5 @@ Omitted functions:
   - TextToInteger
 - models
   - all functions
+- audio
+  - ExportWaveAsCode

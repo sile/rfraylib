@@ -15,6 +15,12 @@ fn main() -> anyhow::Result<()> {
         );
     }
 
+    if let Some(sound) = rfraylib::audio::Sound::load("/tmp/coin.wav") {
+        println!("Start sound");
+        system.audio_device_mut().play_sound(&sound);
+        while system.audio_device().is_sound_playing(&sound) {}
+    }
+
     while !system.window().should_close() {
         {
             let mut canvas = system.next_frame();
