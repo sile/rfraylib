@@ -1,5 +1,5 @@
 use crate::structs::Rectangle;
-use crate::{Color, Size};
+use crate::{Color, Position, Size};
 use std::ffi::CString;
 use std::os::raw::c_int;
 use std::path::Path;
@@ -24,6 +24,10 @@ impl Texture {
 pub struct Image(raylib4_sys::Image);
 
 impl Image {
+    pub fn size(&self) -> Size {
+        (self.0.width as f32, self.0.height as f32).into()
+    }
+
     /// Load image from file into CPU memory (RAM).
     pub fn load<P: AsRef<Path>>(path: P) -> Option<Self> {
         let path = path_to_cstring(path)?;
@@ -232,6 +236,158 @@ impl Image {
     /// Crop an image to a defined rectangle.
     pub fn crop(&mut self, rectangle: Rectangle) {
         unsafe { raylib4_sys::ImageCrop(&mut self.0, rectangle.into()) };
+    }
+
+    /// Crop image depending on alpha value.
+    pub fn alpha_crop(&mut self, threshold: f32) {
+        unsafe { raylib4_sys::ImageAlphaCrop(&mut self.0, threshold) };
+    }
+
+    /// Clear alpha channel to desired color.
+    pub fn alpha_clear(&mut self, color: Color, threshold: f32) {
+        unsafe { raylib4_sys::ImageAlphaClear(&mut self.0, color.into(), threshold) };
+    }
+
+    /// Apply alpha mask to image.
+    pub fn alpha_mask(&mut self, mask: &Self) {
+        unsafe { raylib4_sys::ImageAlphaMask(&mut self.0, mask.0) };
+    }
+
+    /// Premultiply alpha channel.
+    pub fn alpha_premultiply(&mut self) {
+        unsafe { raylib4_sys::ImageAlphaPremultiply(&mut self.0) };
+    }
+
+    /// Resize image (Bicubic scaling algorithm).
+    pub fn resize(&mut self, size: Size) {
+        unsafe { raylib4_sys::ImageResize(&mut self.0, size.width as c_int, size.height as c_int) };
+    }
+
+    /// Resize image (Nearest-Neighbor scaling algorithm).
+    pub fn resize_nn(&mut self, size: Size) {
+        unsafe {
+            raylib4_sys::ImageResizeNN(&mut self.0, size.width as c_int, size.height as c_int)
+        };
+    }
+
+    /// Resize canvas and fill with color.
+    pub fn resize_canvas(&mut self, size: Size, offset: Position, color: Color) {
+        unsafe {
+            raylib4_sys::ImageResizeCanvas(
+                &mut self.0,
+                size.width as c_int,
+                size.height as c_int,
+                offset.x as c_int,
+                offset.y as c_int,
+                color.into(),
+            );
+        }
+    }
+
+    /// Generate all mipmap levels for a provided image.
+    pub fn mipmaps(&mut self) {
+        unsafe { raylib4_sys::ImageMipmaps(&mut self.0) };
+    }
+
+    /// Dither image data to 16bpp or lower (Floyd-Steinberg dithering).
+    // TODO: add Bpp struct
+    pub fn dither(&mut self, r_bpp: u8, g_bpp: u8, b_bpp: u8, a_bpp: u8) {
+        unsafe {
+            raylib4_sys::ImageDither(
+                &mut self.0,
+                r_bpp as c_int,
+                g_bpp as c_int,
+                b_bpp as c_int,
+                a_bpp as c_int,
+            )
+        };
+    }
+
+    /// Flip image vertically.
+    pub fn flip_vertical(&mut self) {
+        unsafe { raylib4_sys::ImageFlipVertical(&mut self.0) };
+    }
+
+    /// Flip image horizontally.
+    pub fn flip_horizontal(&mut self) {
+        unsafe { raylib4_sys::ImageFlipHorizontal(&mut self.0) };
+    }
+
+    /// Rotate image clockwise 90deg.
+    pub fn rotate_cw(&mut self) {
+        unsafe { raylib4_sys::ImageRotateCW(&mut self.0) };
+    }
+
+    /// Rotate image counter-clockwise 90deg.
+    pub fn rotate_ccw(&mut self) {
+        unsafe { raylib4_sys::ImageRotateCCW(&mut self.0) };
+    }
+
+    /// Modify image color: tint.
+    pub fn color_tint(&mut self, color: Color) {
+        unsafe { raylib4_sys::ImageColorTint(&mut self.0, color.into()) };
+    }
+
+    /// Modify image color: invert.
+    pub fn color_invert(&mut self) {
+        unsafe { raylib4_sys::ImageColorInvert(&mut self.0) };
+    }
+
+    /// Modify image color: grayscale.
+    pub fn color_grayscale(&mut self) {
+        unsafe { raylib4_sys::ImageColorGrayscale(&mut self.0) };
+    }
+
+    /// Modify image color: contrast (-100 to 100).
+    pub fn color_contrast(&mut self, contrast: f32) {
+        unsafe { raylib4_sys::ImageColorContrast(&mut self.0, contrast) };
+    }
+
+    /// Modify image color: brightness (-255 to 255).
+    pub fn color_brightness(&mut self, brightness: i16) {
+        unsafe { raylib4_sys::ImageColorBrightness(&mut self.0, brightness as c_int) };
+    }
+
+    /// Modify image color: replace color.
+    pub fn color_replace(&mut self, old: Color, new: Color) {
+        unsafe { raylib4_sys::ImageColorReplace(&mut self.0, old.into(), new.into()) };
+    }
+
+    /// Load color data from image as a Color array (RGBA - 32bit).
+    pub fn load_colors(&self) -> Vec<Color> {
+        let size = self.size();
+        let n = size.width as usize * size.height as usize;
+        let colors_ptr = unsafe { raylib4_sys::LoadImageColors(self.0) };
+        let colors = (0..n)
+            .map(|i| Color::from(unsafe { std::slice::from_raw_parts(colors_ptr, n) }[i]))
+            .collect();
+        unsafe { raylib4_sys::UnloadImageColors(colors_ptr) };
+        colors
+    }
+
+    /// Load colors palette from image as a Color array (RGBA - 32bit).
+    pub fn load_palette(&self, max_palette_size: usize) -> Vec<Color> {
+        let mut colors_count = 0;
+        let palette_ptr = unsafe {
+            raylib4_sys::LoadImagePalette(self.0, max_palette_size as c_int, &mut colors_count)
+        };
+        let n = colors_count as usize;
+        let palette = (0..n)
+            .map(|i| Color::from(unsafe { std::slice::from_raw_parts(palette_ptr, n) }[i]))
+            .collect();
+        unsafe { raylib4_sys::UnloadImagePalette(palette_ptr) };
+        palette
+    }
+
+    /// Get image alpha border rectangle.
+    pub fn get_alpha_border(&self, threshold: f32) -> Rectangle {
+        unsafe { raylib4_sys::GetImageAlphaBorder(self.0, threshold).into() }
+    }
+
+    /// Get image pixel color at (x, y) position.
+    pub fn get_color(&self, position: Position) -> Color {
+        unsafe { raylib4_sys::GetImageColor(self.0, position.x as c_int, position.y as c_int) }
+            .into()
     }
 }
 

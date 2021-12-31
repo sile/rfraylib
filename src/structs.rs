@@ -3,7 +3,7 @@ use std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Position {
-    pub x: f32,
+    pub x: f32, // TODO: change type
     pub y: f32,
 }
 
@@ -182,6 +182,24 @@ impl From<Rectangle> for raylib4_sys::Rectangle {
             width,
             height,
         }: Rectangle,
+    ) -> Self {
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
+    }
+}
+
+impl From<raylib4_sys::Rectangle> for Rectangle {
+    fn from(
+        raylib4_sys::Rectangle {
+            x,
+            y,
+            width,
+            height,
+        }: raylib4_sys::Rectangle,
     ) -> Self {
         Self {
             x,

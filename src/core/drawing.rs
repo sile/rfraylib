@@ -59,6 +59,17 @@ impl From<Color> for raylib4_sys::Color {
     }
 }
 
+impl From<raylib4_sys::Color> for Color {
+    fn from(v: raylib4_sys::Color) -> Self {
+        Self {
+            r: v.r,
+            g: v.g,
+            b: v.b,
+            a: v.a,
+        }
+    }
+}
+
 pub trait Draw {
     /// Set background color (framebuffer clear color).
     fn clear_background(&mut self, color: Color) {
