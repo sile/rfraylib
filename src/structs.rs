@@ -103,6 +103,15 @@ impl From<(f32, f32)> for Size {
     }
 }
 
+impl From<Size> for raylib4_sys::Vector2 {
+    fn from(v: Size) -> Self {
+        Self {
+            x: v.width,
+            y: v.height,
+        }
+    }
+}
+
 /// Vector2 type.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

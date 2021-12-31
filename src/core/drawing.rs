@@ -636,7 +636,7 @@ pub struct TextureCanvas<'a, 'b, T> {
 
 impl<'a, 'b, T> TextureCanvas<'a, 'b, T> {
     pub(crate) fn new(parent: &'a T, target: &'b RenderTexture) -> Self {
-        unsafe { raylib4_sys::BeginTextureMode(target.inner) };
+        unsafe { raylib4_sys::BeginTextureMode(target.0) };
         Self { parent, target }
     }
 }

@@ -1,23 +1,292 @@
 use crate::structs::Rectangle;
 use crate::{Color, Position, Size};
 use std::ffi::CString;
-use std::os::raw::c_int;
+use std::os::raw::{c_int, c_void};
 use std::path::Path;
 
 #[derive(Debug)]
-pub struct RenderTexture {
-    pub(crate) inner: raylib4_sys::RenderTexture, // TODO
+pub struct RenderTexture(
+    pub(crate) raylib4_sys::RenderTexture, // TODO
+);
+
+impl RenderTexture {
+    /// Load texture for rendering (framebuffer).
+    pub fn load(size: Size) -> Option<Self> {
+        let texture =
+            unsafe { raylib4_sys::LoadRenderTexture(size.width as c_int, size.height as c_int) };
+        if texture.id == 0 {
+            None
+        } else {
+            Some(Self(texture))
+        }
+    }
+}
+
+impl Drop for RenderTexture {
+    fn drop(&mut self) {
+        unsafe { raylib4_sys::UnloadRenderTexture(self.0) };
+    }
 }
 
 #[derive(Debug)]
-pub struct Texture {
-    pub(crate) inner: raylib4_sys::Texture, // TODO
-}
+pub struct Texture(
+    pub(crate) raylib4_sys::Texture, // TODO
+);
 
 impl Texture {
     pub(crate) fn to_raw(&self) -> raylib4_sys::Texture {
-        self.inner.clone()
+        self.0.clone()
     }
+
+    /// Load texture from file into GPU memory (VRAM).
+    pub fn load<P: AsRef<Path>>(path: P) -> Option<Self> {
+        let path = path_to_cstring(path)?;
+        let texture = unsafe { raylib4_sys::LoadTexture(path.as_ptr()) };
+        if texture.id == 0 {
+            None
+        } else {
+            Some(Self(texture))
+        }
+    }
+
+    /// Load texture from image data.
+    pub fn load_from_image(image: &Image) -> Option<Self> {
+        let texture = unsafe { raylib4_sys::LoadTextureFromImage(image.0) };
+        if texture.id == 0 {
+            None
+        } else {
+            Some(Self(texture))
+        }
+    }
+
+    /// Load cubemap from image, multiple image cubemap layouts supported.
+    pub fn load_texture_cubemap(image: &Image, layout: CubemapLayout) -> Option<TextureCubemap> {
+        let texture = unsafe { raylib4_sys::LoadTextureCubemap(image.0, layout as c_int) };
+        if texture.id == 0 {
+            None
+        } else {
+            Some(Self(texture))
+        }
+    }
+
+    /// Update GPU texture rectangle with new data.
+    pub fn update_rec(&mut self, rectangle: Rectangle, pixels: &[u8]) {
+        unsafe {
+            raylib4_sys::UpdateTextureRec(
+                self.0,
+                rectangle.into(),
+                pixels.as_ptr() as *const c_void,
+            )
+        };
+    }
+
+    /// Generate GPU mipmaps for a texture.
+    pub fn generate_mipmaps(&mut self) {
+        unsafe { raylib4_sys::GenTextureMipmaps(&mut self.0) };
+    }
+
+    /// Set texture scaling filter mode.
+    pub fn set_filter(&mut self, filter: TextureFilter) {
+        unsafe { raylib4_sys::SetTextureFilter(self.0, filter as c_int) };
+    }
+
+    /// Set texture wrapping mode.
+    pub fn set_wrap(&mut self, wrap: TextureWrap) {
+        unsafe { raylib4_sys::SetTextureWrap(self.0, wrap as c_int) };
+    }
+
+    /// Draw a Texture2D.
+    pub fn draw(&mut self, position: Position, tint: Color) {
+        unsafe { raylib4_sys::DrawTextureV(self.0, position.into(), tint.into()) };
+    }
+
+    /// Draw a Texture2D with extended parameters.
+    pub fn draw_ex(&mut self, position: Position, rotation: f32, scale: f32, tint: Color) {
+        unsafe {
+            raylib4_sys::DrawTextureEx(self.0, position.into(), rotation, scale, tint.into())
+        };
+    }
+
+    /// Draw a part of a texture defined by a rectangle.
+    pub fn draw_rec(&mut self, source: Rectangle, position: Position, tint: Color) {
+        unsafe {
+            raylib4_sys::DrawTextureRec(self.0, source.into(), position.into(), tint.into());
+        }
+    }
+
+    /// Draw texture quad with tiling and offset parameters.
+    pub fn draw_quad(&mut self, tiling: Size, offset: Position, quad: Rectangle, tint: Color) {
+        unsafe {
+            raylib4_sys::DrawTextureQuad(
+                self.0,
+                tiling.into(),
+                offset.into(),
+                quad.into(),
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draw part of a texture (defined by a rectangle) with rotation and scale tiled into dest.
+    pub fn draw_tiled(
+        &mut self,
+        source: Rectangle,
+        dest: Rectangle,
+        origin: Position,
+        rotation: f32,
+        scale: f32,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTextureTiled(
+                self.0,
+                source.into(),
+                dest.into(),
+                origin.into(),
+                rotation,
+                scale,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draw a part of a texture defined by a rectangle with 'pro' parameters.
+    pub fn draw_pro(
+        &mut self,
+        source: Rectangle,
+        dest: Rectangle,
+        origin: Position,
+        rotation: f32,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTexturePro(
+                self.0,
+                source.into(),
+                dest.into(),
+                origin.into(),
+                rotation,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draws a texture (or part of it) that stretches or shrinks nicely.
+    pub fn draw_n_patch(
+        &mut self,
+        info: NpatchInfo,
+        dest: Rectangle,
+        origin: Position,
+        rotation: f32,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTextureNPatch(
+                self.0,
+                info.into(),
+                dest.into(),
+                origin.into(),
+                rotation,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draw a textured polygon.
+    pub fn draw_poly(
+        &mut self,
+        centor: Position,
+        points: &[Position],
+        texcoord: &[Position],
+        tint: Color,
+    ) {
+        let mut points = points
+            .iter()
+            .copied()
+            .map(raylib4_sys::Vector2::from)
+            .collect::<Vec<_>>();
+        let mut texcoord = texcoord
+            .iter()
+            .copied()
+            .map(raylib4_sys::Vector2::from)
+            .collect::<Vec<_>>();
+        unsafe {
+            raylib4_sys::DrawTexturePoly(
+                self.0,
+                centor.into(),
+                points.as_mut_ptr(),
+                texcoord.as_mut_ptr(),
+                points.len() as c_int,
+                tint.into(),
+            );
+        }
+    }
+}
+
+impl Drop for Texture {
+    fn drop(&mut self) {
+        unsafe { raylib4_sys::UnloadTexture(self.0) };
+    }
+}
+
+pub type TextureCubemap = Texture;
+
+#[derive(Debug, Clone)]
+pub struct NpatchInfo {
+    pub source: Rectangle,
+    pub left: i32,
+    pub top: i32,
+    pub right: i32,
+    pub bottom: i32,
+    pub layout: NpatchLayout,
+}
+
+impl From<NpatchInfo> for raylib4_sys::NPatchInfo {
+    fn from(v: NpatchInfo) -> Self {
+        Self {
+            source: v.source.into(),
+            left: v.left,
+            top: v.top,
+            right: v.right,
+            bottom: v.bottom,
+            layout: v.layout as c_int,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum NpatchLayout {
+    NinePatch = 0,
+    ThreePatchVertical = 1,
+    ThreePatchHorizontal = 2,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum CubemapLayout {
+    AutoDetect = 0,
+    LineVertial = 1,
+    LineHorizontal = 2,
+    CrossThreeByFour = 3,
+    CrossFourByThree = 4,
+    Panorama = 5,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum TextureFilter {
+    Point = 0,
+    Bilinear = 1,
+    Trilinear = 2,
+    Anisotropic4x = 3,
+    Anisotropic8x = 4,
+    Anisotoropic16x = 5,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum TextureWrap {
+    Repeat = 0,
+    Clamp = 1,
+    MirrorRepeat = 2,
+    MirrorClamp = 3,
 }
 
 #[derive(Debug)]
