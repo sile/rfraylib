@@ -389,6 +389,83 @@ impl Image {
         unsafe { raylib4_sys::GetImageColor(self.0, position.x as c_int, position.y as c_int) }
             .into()
     }
+
+    /// Clear image background with given color.
+    pub fn clear_background(&mut self, color: Color) {
+        unsafe { raylib4_sys::ImageClearBackground(&mut self.0, color.into()) };
+    }
+
+    /// Draw pixel within an image.
+    pub fn draw_pixel(&mut self, position: Position, color: Color) {
+        unsafe { raylib4_sys::ImageDrawPixelV(&mut self.0, position.into(), color.into()) };
+    }
+
+    /// Draw line within an image.
+    pub fn draw_line(&mut self, start: Position, end: Position, color: Color) {
+        unsafe { raylib4_sys::ImageDrawLineV(&mut self.0, start.into(), end.into(), color.into()) };
+    }
+
+    /// Draw circle within an image.
+    pub fn draw_circle(&mut self, center: Position, radius: usize, color: Color) {
+        unsafe {
+            raylib4_sys::ImageDrawCircleV(&mut self.0, center.into(), radius as c_int, color.into())
+        };
+    }
+
+    /// Draw rectangle within an image.
+    pub fn draw_rectangle(&mut self, rectangle: Rectangle, color: Color) {
+        unsafe { raylib4_sys::ImageDrawRectangleRec(&mut self.0, rectangle.into(), color.into()) };
+    }
+
+    /// Draw rectangle lines within an image.
+    pub fn draw_rectangle_lines(&mut self, rectangle: Rectangle, thick: usize, color: Color) {
+        unsafe {
+            raylib4_sys::ImageDrawRectangleLines(
+                &mut self.0,
+                rectangle.into(),
+                thick as c_int,
+                color.into(),
+            )
+        };
+    }
+
+    /// Draw a source image within a destination image (tint applied to source).
+    pub fn draw(&mut self, src: &Self, src_rec: Rectangle, dst_rec: Rectangle, tint: Color) {
+        unsafe {
+            raylib4_sys::ImageDraw(
+                &mut self.0,
+                src.0,
+                src_rec.into(),
+                dst_rec.into(),
+                tint.into(),
+            )
+        };
+    }
+
+    /// Draw text (using default font) within an image (destination).
+    pub fn draw_text(
+        &mut self,
+        text: &str,
+        position: Position,
+        font_size: usize,
+        color: Color,
+    ) -> Result<(), std::ffi::NulError> {
+        let text = CString::new(text)?;
+        unsafe {
+            raylib4_sys::ImageDrawText(
+                &mut self.0,
+                text.as_ptr(),
+                position.x as c_int,
+                position.y as c_int,
+                font_size as c_int,
+                color.into(),
+            );
+        }
+        Ok(())
+    }
+
+    // TODO
+    // void ImageDrawTextEx(Image *dst, Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint); // Draw text (custom sprite font) within an image (destination)
 }
 
 impl Clone for Image {
