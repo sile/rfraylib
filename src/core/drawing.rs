@@ -753,7 +753,7 @@ impl<'a> Drop for WindowCanvas<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Camera {
     pub offset: Position,
     pub target: Position,

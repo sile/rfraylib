@@ -15,6 +15,11 @@ vsprintf = "2"
 [dev-dependencies]
 anyhow = "1"
 env_logger = "0.9"
+rand = "0.8"
+
+[[example]]
+name = "core_2d_camera"
+path = "examples/core/core_2d_camera.rs"
 
 [[example]]
 name = "text_input_box"
