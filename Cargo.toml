@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 bitflags = "1"
 log = "0.4"
-raylib4-sys = { git = "ssh://git@github.com/sile/raylib4-sys" }
+raylib4-sys = "0.1"
 thiserror = "1"
 vsprintf = "2"
 
