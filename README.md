@@ -1,7 +1,11 @@
 raylib4
 =======
 
-Omitted functions:
+A Rust flavored wrapper for raylib v4 2D functionality.
+
+Omitted functions
+-----------------
+
 - core:
   - GetWindowHandle
   - GetRandomValue
