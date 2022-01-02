@@ -1,5 +1,5 @@
-raylib4
-=======
+rfraylib
+========
 
 A Rust flavored wrapper for raylib v4 2D functionality.
 
