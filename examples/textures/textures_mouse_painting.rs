@@ -167,7 +167,7 @@ fn main() -> anyhow::Result<()> {
             target.texture(),
             Rectangle {
                 position: (0, 0).into(),
-                size: target.texture().size(), //.map(|(w, h)| (w, -h)),
+                size: target.texture().size().map(|w, h| (w, -h)),
             },
             (0, 0).into(),
             Color::WHITE,
