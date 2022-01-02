@@ -294,7 +294,7 @@ pub struct Image(pub(crate) raylib4_sys::Image); // TODO
 
 impl Image {
     pub fn size(&self) -> Size {
-        (self.0.width as f32, self.0.height as f32).into()
+        (self.0.width as u32, self.0.height as u32).into()
     }
 
     /// Load image from file into CPU memory (RAM).

@@ -420,10 +420,10 @@ pub trait Draw {
     fn draw_rectangle_gradient_v(&mut self, rectangle: Rectangle, color1: Color, color2: Color) {
         unsafe {
             raylib4_sys::DrawRectangleGradientV(
-                rectangle.x as c_int,
-                rectangle.y as c_int,
-                rectangle.width as c_int,
-                rectangle.height as c_int,
+                rectangle.position.x,
+                rectangle.position.y,
+                rectangle.size.width as c_int,
+                rectangle.size.height as c_int,
                 color1.into(),
                 color2.into(),
             );
@@ -434,10 +434,10 @@ pub trait Draw {
     fn draw_rectangle_gradient_h(&mut self, rectangle: Rectangle, color1: Color, color2: Color) {
         unsafe {
             raylib4_sys::DrawRectangleGradientH(
-                rectangle.x as c_int,
-                rectangle.y as c_int,
-                rectangle.width as c_int,
-                rectangle.height as c_int,
+                rectangle.position.x,
+                rectangle.position.y,
+                rectangle.size.width as c_int,
+                rectangle.size.height as c_int,
                 color1.into(),
                 color2.into(),
             );
@@ -468,10 +468,10 @@ pub trait Draw {
     fn draw_rectangle_lines(&mut self, rectangle: Rectangle, color: Color) {
         unsafe {
             raylib4_sys::DrawRectangleLines(
-                rectangle.x as c_int,
-                rectangle.y as c_int,
-                rectangle.width as c_int,
-                rectangle.height as c_int,
+                rectangle.position.x,
+                rectangle.position.y,
+                rectangle.size.width as c_int,
+                rectangle.size.height as c_int,
                 color.into(),
             );
         }

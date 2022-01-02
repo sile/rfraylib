@@ -40,8 +40,8 @@ pub struct SystemBuilder {
 
 impl SystemBuilder {
     pub const DEFAULT_WINDOW_SISE: Size = Size {
-        width: 800.0,
-        height: 600.0,
+        width: 800,
+        height: 600,
     };
     pub const DEFAULT_WINDOW_TITLE: &'static str = "";
 

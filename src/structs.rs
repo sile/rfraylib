@@ -1,27 +1,42 @@
 use std::os::raw::c_int;
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Position {
-    pub x: f32, // TODO: change type
-    pub y: f32,
+    pub x: i32,
+    pub y: i32,
 }
 
-impl From<(f32, f32)> for Position {
-    fn from((x, y): (f32, f32)) -> Self {
+impl Position {
+    pub fn map<F>(self, f: F) -> Self
+    where
+        F: FnOnce(i32, i32) -> (i32, i32),
+    {
+        f(self.x, self.y).into()
+    }
+}
+
+impl From<(i32, i32)> for Position {
+    fn from((x, y): (i32, i32)) -> Self {
         Self { x, y }
     }
 }
 
 impl From<raylib4_sys::Vector2> for Position {
     fn from(v: raylib4_sys::Vector2) -> Self {
-        Self { x: v.x, y: v.y }
+        Self {
+            x: v.x as i32,
+            y: v.y as i32,
+        }
     }
 }
 
 impl From<Position> for raylib4_sys::Vector2 {
     fn from(v: Position) -> Self {
-        Self { x: v.x, y: v.y }
+        Self {
+            x: v.x as f32,
+            y: v.y as f32,
+        }
     }
 }
 
@@ -91,14 +106,14 @@ impl Line {
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Size {
-    pub width: f32,
-    pub height: f32,
+    pub width: u32,
+    pub height: u32,
 }
 
-impl From<(f32, f32)> for Size {
-    fn from((width, height): (f32, f32)) -> Self {
+impl From<(u32, u32)> for Size {
+    fn from((width, height): (u32, u32)) -> Self {
         Self { width, height }
     }
 }
@@ -106,8 +121,8 @@ impl From<(f32, f32)> for Size {
 impl From<Size> for raylib4_sys::Vector2 {
     fn from(v: Size) -> Self {
         Self {
-            x: v.width,
-            y: v.height,
+            x: v.width as f32,
+            y: v.height as f32,
         }
     }
 }
@@ -115,8 +130,8 @@ impl From<Size> for raylib4_sys::Vector2 {
 impl From<raylib4_sys::Vector2> for Size {
     fn from(v: raylib4_sys::Vector2) -> Self {
         Self {
-            width: v.x,
-            height: v.y,
+            width: v.x as u32,
+            height: v.y as u32,
         }
     }
 }
@@ -166,21 +181,17 @@ impl From<Vector2> for raylib4_sys::Vector2 {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Rectangle {
-    pub x: f32,
-    pub y: f32,
-    pub width: f32,
-    pub height: f32,
+    pub position: Position,
+    pub size: Size,
 }
 
 impl Rectangle {
-    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Self {
+    pub fn new(x: i32, y: i32, width: u32, height: u32) -> Self {
         Self {
-            x,
-            y,
-            width,
-            height,
+            position: (x, y).into(),
+            size: (width, height).into(),
         }
     }
 
@@ -191,48 +202,26 @@ impl Rectangle {
 
     /// Get collision rectangle for two rectangles collision.
     pub fn get_collision_rec(self, other: Self) -> Self {
-        let v = unsafe { raylib4_sys::GetCollisionRec(self.into(), other.into()) };
-        Self {
-            x: v.x,
-            y: v.y,
-            width: v.width,
-            height: v.height,
-        }
+        unsafe { raylib4_sys::GetCollisionRec(self.into(), other.into()).into() }
     }
 }
 
 impl From<Rectangle> for raylib4_sys::Rectangle {
-    fn from(
-        Rectangle {
-            x,
-            y,
-            width,
-            height,
-        }: Rectangle,
-    ) -> Self {
+    fn from(v: Rectangle) -> Self {
         Self {
-            x,
-            y,
-            width,
-            height,
+            x: v.position.x as f32,
+            y: v.position.y as f32,
+            width: v.size.width as f32,
+            height: v.size.height as f32,
         }
     }
 }
 
 impl From<raylib4_sys::Rectangle> for Rectangle {
-    fn from(
-        raylib4_sys::Rectangle {
-            x,
-            y,
-            width,
-            height,
-        }: raylib4_sys::Rectangle,
-    ) -> Self {
+    fn from(v: raylib4_sys::Rectangle) -> Self {
         Self {
-            x,
-            y,
-            width,
-            height,
+            position: (v.x as i32, v.y as i32).into(),
+            size: (v.width as u32, v.height as u32).into(),
         }
     }
 }

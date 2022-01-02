@@ -2,8 +2,8 @@ use rand::Rng;
 use rfraylib::{Camera, Color, Draw, Key, Rectangle};
 
 const MAX_BUILDINGS: usize = 100;
-const SCREEN_WIDTH: f32 = 800.0;
-const SCREEN_HEIGHT: f32 = 450.0;
+const SCREEN_WIDTH: u32 = 800;
+const SCREEN_HEIGHT: u32 = 450;
 
 fn main() -> anyhow::Result<()> {
     let mut system = rfraylib::SystemBuilder::new()
@@ -12,21 +12,21 @@ fn main() -> anyhow::Result<()> {
         .target_fps(60)
         .build()?;
 
-    let mut player = Rectangle::new(400.0, 280.0, 40.0, 40.0);
+    let mut player = Rectangle::new(400, 280, 40, 40);
     let mut buildings = Vec::new();
     let mut build_colors = Vec::new();
-    let mut spacing = 0.0;
+    let mut spacing = 0;
     let mut rng = rand::thread_rng();
     for _ in 0..MAX_BUILDINGS {
-        let width = rng.gen_range(50.0..200.0);
-        let height = rng.gen_range(100.0..800.0);
-        buildings.push(Rectangle {
+        let width: u32 = rng.gen_range(50..200);
+        let height: u32 = rng.gen_range(100..800);
+        buildings.push(Rectangle::new(
+            -6000 + spacing,
+            SCREEN_HEIGHT as i32 - 130 - height as i32,
             width,
             height,
-            y: SCREEN_HEIGHT - 130.0 - height,
-            x: -6000.0 + spacing,
-        });
-        spacing += width;
+        ));
+        spacing += width as i32;
 
         build_colors.push(Color::rgb(
             rng.gen_range(200..240),
@@ -36,8 +36,8 @@ fn main() -> anyhow::Result<()> {
     }
 
     let mut camera = Camera {
-        target: (player.x + 20.0, player.y + 20.0).into(),
-        offset: (SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 2.0).into(),
+        target: player.position.map(|x, y| (x + 20, y + 20)),
+        offset: (SCREEN_WIDTH as i32 / 2, SCREEN_HEIGHT as i32 / 2).into(),
         rotation: 0.0,
         zoom: 1.0,
     };
@@ -45,13 +45,13 @@ fn main() -> anyhow::Result<()> {
     while !system.window().should_close() {
         // Player movement
         if system.keyboard().is_key_down(Key::Right) {
-            player.x += 2.0;
+            player.position.x += 2;
         } else if system.keyboard().is_key_down(Key::Left) {
-            player.x -= 2.0;
+            player.position.x -= 2;
         }
 
         // Camera target follows player
-        camera.target = (player.x + 20.0, player.y + 20.0).into();
+        camera.target = player.position.map(|x, y| (x + 20, y + 20));
 
         // Camera rotation controls
         if system.keyboard().is_key_down(Key::A) {
@@ -86,10 +86,7 @@ fn main() -> anyhow::Result<()> {
         canvas.clear_background(Color::RAYWHITE);
         {
             let mut canvas = canvas.with_camera(camera);
-            canvas.draw_rectangle(
-                Rectangle::new(-6000.0, 320.0, 13000.0, 8000.0),
-                Color::DARKGRAY,
-            );
+            canvas.draw_rectangle(Rectangle::new(-6000, 320, 13000, 8000), Color::DARKGRAY);
 
             for (b, c) in buildings.iter().copied().zip(build_colors.iter().copied()) {
                 canvas.draw_rectangle(b, c);
@@ -98,65 +95,54 @@ fn main() -> anyhow::Result<()> {
             canvas.draw_rectangle(player, Color::RED);
 
             canvas.draw_line(
-                (camera.target.x, -SCREEN_HEIGHT * 10.0).into(),
-                (camera.target.x, SCREEN_HEIGHT * 10.0).into(),
+                (camera.target.x, -(SCREEN_HEIGHT as i32) * 10).into(),
+                (camera.target.x, SCREEN_HEIGHT as i32 * 10).into(),
                 Color::GREEN,
             );
             canvas.draw_line(
-                (-SCREEN_WIDTH * 10.0, camera.target.y).into(),
-                (SCREEN_WIDTH * 10.0, camera.target.y).into(),
+                (-(SCREEN_WIDTH as i32) * 10, camera.target.y).into(),
+                (SCREEN_WIDTH as i32 * 10, camera.target.y).into(),
                 Color::GREEN,
             );
         }
 
-        canvas.draw_text("SCREEN AREA", (640.0, 10.0).into(), 20, Color::RED)?;
+        canvas.draw_text("SCREEN AREA", (640, 10).into(), 20, Color::RED)?;
 
-        canvas.draw_rectangle(Rectangle::new(0.0, 0.0, SCREEN_WIDTH, 5.0), Color::RED);
+        canvas.draw_rectangle(Rectangle::new(0, 0, SCREEN_WIDTH, 5), Color::RED);
+        canvas.draw_rectangle(Rectangle::new(0, 5, 5, SCREEN_HEIGHT - 10), Color::RED);
         canvas.draw_rectangle(
-            Rectangle::new(0.0, 5.0, 5.0, SCREEN_HEIGHT - 10.0),
+            Rectangle::new(SCREEN_WIDTH as i32 - 5, 5, 5, SCREEN_HEIGHT - 10),
             Color::RED,
         );
         canvas.draw_rectangle(
-            Rectangle::new(SCREEN_WIDTH - 5.0, 5.0, 5.0, SCREEN_HEIGHT - 10.0),
+            Rectangle::new(0, SCREEN_HEIGHT as i32 - 5, SCREEN_WIDTH, 5),
             Color::RED,
         );
-        canvas.draw_rectangle(
-            Rectangle::new(0.0, SCREEN_HEIGHT - 5.0, SCREEN_WIDTH, 5.0),
-            Color::RED,
-        );
-        canvas.draw_rectangle(
-            Rectangle::new(10.0, 10.0, 250.0, 113.0),
-            Color::SKYBLUE.fade(0.5),
-        );
-        canvas.draw_rectangle_lines(Rectangle::new(10.0, 10.0, 250.0, 113.0), Color::BLUE);
+        canvas.draw_rectangle(Rectangle::new(10, 10, 250, 113), Color::SKYBLUE.fade(0.5));
+        canvas.draw_rectangle_lines(Rectangle::new(10, 10, 250, 113), Color::BLUE);
 
         canvas.draw_text(
             "Free 2d camera controls:",
-            (20.0, 20.0).into(),
+            (20, 20).into(),
             10,
             Color::BLACK,
         )?;
         canvas.draw_text(
             "- Right/Left to move Offset",
-            (40.0, 40.0).into(),
+            (40, 40).into(),
             10,
             Color::DARKGRAY,
         )?;
         canvas.draw_text(
             "- Mouse Wheel to Zoom in-out",
-            (40.0, 60.0).into(),
+            (40, 60).into(),
             10,
             Color::DARKGRAY,
         )?;
-        canvas.draw_text(
-            "- A / S to Rotate",
-            (40.0, 80.0).into(),
-            10,
-            Color::DARKGRAY,
-        )?;
+        canvas.draw_text("- A / S to Rotate", (40, 80).into(), 10, Color::DARKGRAY)?;
         canvas.draw_text(
             "- R to reset Zoom and Rotation",
-            (40.0, 100.0).into(),
+            (40, 100).into(),
             10,
             Color::DARKGRAY,
         )?;

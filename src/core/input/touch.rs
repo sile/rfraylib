@@ -8,8 +8,8 @@ pub struct Touch(pub(crate) ());
 impl Touch {
     /// Get touch position for touch point 0 (relative to screen size).
     pub fn get_position(&self) -> Position {
-        let x = unsafe { raylib4_sys::GetTouchX() as f32 };
-        let y = unsafe { raylib4_sys::GetTouchY() as f32 };
+        let x = unsafe { raylib4_sys::GetTouchX() };
+        let y = unsafe { raylib4_sys::GetTouchY() };
         Position { x, y }
     }
 

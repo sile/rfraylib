@@ -2,8 +2,8 @@ use rfraylib::core::drawing::Draw;
 use rfraylib::text::Font;
 use rfraylib::Color;
 
-const SCREEN_WIDTH: f32 = 800.0;
-const SCREEN_HEIGHT: f32 = 450.0;
+const SCREEN_WIDTH: u32 = 800;
+const SCREEN_HEIGHT: u32 = 450;
 const MAX_INPUT_CHARS: usize = 9;
 
 fn main() -> anyhow::Result<()> {
@@ -16,10 +16,8 @@ fn main() -> anyhow::Result<()> {
         .build()?;
 
     let text_box = rfraylib::Rectangle {
-        x: SCREEN_WIDTH / 2.0 - 100.0,
-        y: 180.0,
-        width: 225.0,
-        height: 50.0,
+        position: (SCREEN_WIDTH as i32 / 2 - 100, 180).into(),
+        size: (225, 50).into(),
     };
 
     let mut frames_counter = 0;
@@ -64,7 +62,7 @@ fn main() -> anyhow::Result<()> {
         canvas.clear_background(Color::RAYWHITE);
         canvas.draw_text(
             "PLACE MOUSE OVER INPUT BOX!",
-            (240.0, 140.0).into(),
+            (240, 140).into(),
             20,
             Color::GRAY,
         )?;
@@ -79,13 +77,13 @@ fn main() -> anyhow::Result<()> {
 
         canvas.draw_text(
             &name,
-            (text_box.x + 5.0, text_box.y + 8.0).into(),
+            text_box.position.map(|x, y| (x + 5, y + 8)).into(),
             40,
             Color::MAROON,
         )?;
         canvas.draw_text(
             &format!("INPUT CHARS: {}/{}", name.len(), MAX_INPUT_CHARS),
-            (315.0, 250.0).into(),
+            (315, 250).into(),
             20,
             Color::DARKGRAY,
         )?;
@@ -93,13 +91,13 @@ fn main() -> anyhow::Result<()> {
         if mouse_on_text {
             if name.len() < MAX_INPUT_CHARS {
                 // Draw blinking underscore char
+                let font_size = Font::measure_text(&name, 40)? as i32;
                 if ((frames_counter / 20) % 2) == 0 {
                     canvas.draw_text(
                         "_",
-                        (
-                            text_box.x + 8.0 + Font::measure_text(&name, 40)?,
-                            text_box.y + 12.0,
-                        )
+                        text_box
+                            .position
+                            .map(|x, y| (x + 8 + font_size, y + 12))
                             .into(),
                         40,
                         Color::MAROON,
@@ -108,7 +106,7 @@ fn main() -> anyhow::Result<()> {
             } else {
                 canvas.draw_text(
                     "Press BACKSPACE to delete chars...",
-                    (230.0, 300.0).into(),
+                    (230, 300).into(),
                     20,
                     Color::GRAY,
                 )?;
