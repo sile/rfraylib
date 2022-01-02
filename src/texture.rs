@@ -95,6 +95,7 @@ impl Texture {
         unsafe { raylib4_sys::SetTextureWrap(self.0, wrap as c_int) };
     }
 
+    // TODO: move to Draw trait
     /// Draw a Texture2D.
     pub fn draw(&mut self, position: Position, tint: Color) {
         unsafe { raylib4_sys::DrawTextureV(self.0, position.into(), tint.into()) };

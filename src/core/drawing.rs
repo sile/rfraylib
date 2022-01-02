@@ -169,6 +169,7 @@ pub trait Draw {
         ScissorModeCanvas::new(self, position, size)
     }
 
+    // TODO: delete(?)
     fn create_texture_canvas<'a, 'b>(
         &'a mut self,
         target: &'b mut RenderTexture,
