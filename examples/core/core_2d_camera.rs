@@ -2,8 +2,8 @@ use rand::Rng;
 use rfraylib::{Camera, Color, Draw, Key, Rectangle};
 
 const MAX_BUILDINGS: usize = 100;
-const SCREEN_WIDTH: u32 = 800;
-const SCREEN_HEIGHT: u32 = 450;
+const SCREEN_WIDTH: i32 = 800;
+const SCREEN_HEIGHT: i32 = 450;
 
 fn main() -> anyhow::Result<()> {
     let mut system = rfraylib::SystemBuilder::new()
@@ -18,15 +18,15 @@ fn main() -> anyhow::Result<()> {
     let mut spacing = 0;
     let mut rng = rand::thread_rng();
     for _ in 0..MAX_BUILDINGS {
-        let width: u32 = rng.gen_range(50..200);
-        let height: u32 = rng.gen_range(100..800);
+        let width = rng.gen_range(50..200);
+        let height = rng.gen_range(100..800);
         buildings.push(Rectangle::new(
             -6000 + spacing,
-            SCREEN_HEIGHT as i32 - 130 - height as i32,
+            SCREEN_HEIGHT - 130 - height,
             width,
             height,
         ));
-        spacing += width as i32;
+        spacing += width;
 
         build_colors.push(Color::rgb(
             rng.gen_range(200..240),

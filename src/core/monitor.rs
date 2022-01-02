@@ -60,15 +60,15 @@ impl<'a> Monitor<'a> {
 
     /// Get monitor size (max available by monitor).
     pub fn get_size(&self) -> Size {
-        let width = unsafe { raylib4_sys::GetMonitorWidth(self.index) } as u32;
-        let height = unsafe { raylib4_sys::GetMonitorHeight(self.index) } as u32;
+        let width = unsafe { raylib4_sys::GetMonitorWidth(self.index) } as i32;
+        let height = unsafe { raylib4_sys::GetMonitorHeight(self.index) } as i32;
         Size { width, height }
     }
 
     /// Get monitor physical size in millimetres.
     pub fn get_physical_size(&self) -> Size {
-        let width = unsafe { raylib4_sys::GetMonitorPhysicalWidth(self.index) } as u32;
-        let height = unsafe { raylib4_sys::GetMonitorPhysicalHeight(self.index) } as u32;
+        let width = unsafe { raylib4_sys::GetMonitorPhysicalWidth(self.index) } as i32;
+        let height = unsafe { raylib4_sys::GetMonitorPhysicalHeight(self.index) } as i32;
         Size { width, height }
     }
 

@@ -108,12 +108,22 @@ impl Line {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Size {
-    pub width: u32,
-    pub height: u32,
+    pub width: i32,
+    pub height: i32,
 }
 
-impl From<(u32, u32)> for Size {
-    fn from((width, height): (u32, u32)) -> Self {
+impl Size {
+    pub fn map<F>(self, f: F) -> Self
+    where
+        F: FnOnce(i32, i32) -> (i32, i32),
+    {
+        let (width, height) = f(self.width, self.height);
+        Self { width, height }
+    }
+}
+
+impl From<(i32, i32)> for Size {
+    fn from((width, height): (i32, i32)) -> Self {
         Self { width, height }
     }
 }
@@ -130,8 +140,8 @@ impl From<Size> for raylib4_sys::Vector2 {
 impl From<raylib4_sys::Vector2> for Size {
     fn from(v: raylib4_sys::Vector2) -> Self {
         Self {
-            width: v.x as u32,
-            height: v.y as u32,
+            width: v.x as i32,
+            height: v.y as i32,
         }
     }
 }
@@ -188,7 +198,7 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
-    pub fn new(x: i32, y: i32, width: u32, height: u32) -> Self {
+    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
         Self {
             position: (x, y).into(),
             size: (width, height).into(),
@@ -197,7 +207,7 @@ impl Rectangle {
 
     pub fn map<F>(self, f: F) -> Self
     where
-        F: FnOnce(i32, i32, u32, u32) -> (i32, i32, u32, u32),
+        F: FnOnce(i32, i32, i32, i32) -> (i32, i32, i32, i32),
     {
         let (x, y, width, height) = f(
             self.position.x,
@@ -234,7 +244,7 @@ impl From<raylib4_sys::Rectangle> for Rectangle {
     fn from(v: raylib4_sys::Rectangle) -> Self {
         Self {
             position: (v.x as i32, v.y as i32).into(),
-            size: (v.width as u32, v.height as u32).into(),
+            size: (v.width as i32, v.height as i32).into(),
         }
     }
 }

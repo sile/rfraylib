@@ -2,8 +2,8 @@ use rfraylib::core::drawing::Draw;
 use rfraylib::text::Font;
 use rfraylib::Color;
 
-const SCREEN_WIDTH: u32 = 800;
-const SCREEN_HEIGHT: u32 = 450;
+const SCREEN_WIDTH: i32 = 800;
+const SCREEN_HEIGHT: i32 = 450;
 const MAX_INPUT_CHARS: usize = 9;
 
 fn main() -> anyhow::Result<()> {
@@ -16,7 +16,7 @@ fn main() -> anyhow::Result<()> {
         .build()?;
 
     let text_box = rfraylib::Rectangle {
-        position: (SCREEN_WIDTH as i32 / 2 - 100, 180).into(),
+        position: (SCREEN_WIDTH / 2 - 100, 180).into(),
         size: (225, 50).into(),
     };
 

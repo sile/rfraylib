@@ -88,7 +88,9 @@ fn main() -> anyhow::Result<()> {
         }
 
         // Change brush size
-        brush_size += (mouse.get_wheel_move() * 5.0).min(2.0).max(50.0);
+        brush_size = (brush_size + mouse.get_wheel_move() * 5.0)
+            .max(2.0)
+            .min(50.0);
 
         if keyboard.is_key_pressed(Key::C) {
             // Clear render texture to clear color
@@ -112,7 +114,7 @@ fn main() -> anyhow::Result<()> {
             }
         }
         if mouse.is_button_down(MouseButton::Right) {
-            if mouse_was_pressed {
+            if !mouse_was_pressed {
                 color_selected_prev = color_selected;
                 color_selected = 0;
             }
@@ -165,7 +167,7 @@ fn main() -> anyhow::Result<()> {
             target.texture(),
             Rectangle {
                 position: (0, 0).into(),
-                size: target.texture().size(),
+                size: target.texture().size(), //.map(|(w, h)| (w, -h)),
             },
             (0, 0).into(),
             Color::WHITE,

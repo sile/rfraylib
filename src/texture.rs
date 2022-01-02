@@ -46,7 +46,7 @@ impl Texture {
     }
 
     pub fn size(&self) -> Size {
-        (self.0.width as u32, self.0.height as u32).into()
+        (self.0.width as i32, self.0.height as i32).into()
     }
 
     /// Load texture from file into GPU memory (VRAM).
@@ -178,7 +178,7 @@ pub struct Image(pub(crate) raylib4_sys::Image); // TODO
 
 impl Image {
     pub fn size(&self) -> Size {
-        (self.0.width as u32, self.0.height as u32).into()
+        (self.0.width as i32, self.0.height as i32).into()
     }
 
     /// Load image from file into CPU memory (RAM).

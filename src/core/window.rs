@@ -159,8 +159,8 @@ impl Window {
 
     /// Get current screen size.
     pub fn get_screen_size(&self) -> Size {
-        let width = unsafe { raylib4_sys::GetScreenWidth() } as u32;
-        let height = unsafe { raylib4_sys::GetScreenHeight() } as u32;
+        let width = unsafe { raylib4_sys::GetScreenWidth() } as i32;
+        let height = unsafe { raylib4_sys::GetScreenHeight() } as i32;
         Size { width, height }
     }
 
