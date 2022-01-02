@@ -195,6 +195,19 @@ impl Rectangle {
         }
     }
 
+    pub fn map<F>(self, f: F) -> Self
+    where
+        F: FnOnce(i32, i32, u32, u32) -> (i32, i32, u32, u32),
+    {
+        let (x, y, width, height) = f(
+            self.position.x,
+            self.position.y,
+            self.size.width,
+            self.size.height,
+        );
+        Self::new(x, y, width, height)
+    }
+
     /// Check collision between two rectangles.
     pub fn check_collision_recs(&self, other: &Self) -> bool {
         unsafe { raylib4_sys::CheckCollisionRecs((*self).into(), (*other).into()) }

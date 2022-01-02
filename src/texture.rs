@@ -7,6 +7,7 @@ use std::path::Path;
 #[derive(Debug)]
 pub struct RenderTexture(
     pub(crate) raylib4_sys::RenderTexture, // TODO
+    Texture,
 );
 
 impl RenderTexture {
@@ -17,13 +18,19 @@ impl RenderTexture {
         if texture.id == 0 {
             None
         } else {
-            Some(Self(texture))
+            let t = Texture(texture.texture); // TODO
+            Some(Self(texture, t))
         }
+    }
+
+    pub fn texture(&self) -> &Texture {
+        &self.1
     }
 }
 
 impl Drop for RenderTexture {
     fn drop(&mut self) {
+        self.1 .0.id = 0; // TODO
         unsafe { raylib4_sys::UnloadRenderTexture(self.0) };
     }
 }
@@ -36,6 +43,10 @@ pub struct Texture(
 impl Texture {
     pub(crate) fn to_raw(&self) -> raylib4_sys::Texture {
         self.0.clone()
+    }
+
+    pub fn size(&self) -> Size {
+        (self.0.width as u32, self.0.height as u32).into()
     }
 
     /// Load texture from file into GPU memory (VRAM).
@@ -93,134 +104,6 @@ impl Texture {
     /// Set texture wrapping mode.
     pub fn set_wrap(&mut self, wrap: TextureWrap) {
         unsafe { raylib4_sys::SetTextureWrap(self.0, wrap as c_int) };
-    }
-
-    // TODO: move to Draw trait
-    /// Draw a Texture2D.
-    pub fn draw(&mut self, position: Position, tint: Color) {
-        unsafe { raylib4_sys::DrawTextureV(self.0, position.into(), tint.into()) };
-    }
-
-    /// Draw a Texture2D with extended parameters.
-    pub fn draw_ex(&mut self, position: Position, rotation: f32, scale: f32, tint: Color) {
-        unsafe {
-            raylib4_sys::DrawTextureEx(self.0, position.into(), rotation, scale, tint.into())
-        };
-    }
-
-    /// Draw a part of a texture defined by a rectangle.
-    pub fn draw_rec(&mut self, source: Rectangle, position: Position, tint: Color) {
-        unsafe {
-            raylib4_sys::DrawTextureRec(self.0, source.into(), position.into(), tint.into());
-        }
-    }
-
-    /// Draw texture quad with tiling and offset parameters.
-    pub fn draw_quad(&mut self, tiling: Size, offset: Position, quad: Rectangle, tint: Color) {
-        unsafe {
-            raylib4_sys::DrawTextureQuad(
-                self.0,
-                tiling.into(),
-                offset.into(),
-                quad.into(),
-                tint.into(),
-            );
-        }
-    }
-
-    /// Draw part of a texture (defined by a rectangle) with rotation and scale tiled into dest.
-    pub fn draw_tiled(
-        &mut self,
-        source: Rectangle,
-        dest: Rectangle,
-        origin: Position,
-        rotation: f32,
-        scale: f32,
-        tint: Color,
-    ) {
-        unsafe {
-            raylib4_sys::DrawTextureTiled(
-                self.0,
-                source.into(),
-                dest.into(),
-                origin.into(),
-                rotation,
-                scale,
-                tint.into(),
-            );
-        }
-    }
-
-    /// Draw a part of a texture defined by a rectangle with 'pro' parameters.
-    pub fn draw_pro(
-        &mut self,
-        source: Rectangle,
-        dest: Rectangle,
-        origin: Position,
-        rotation: f32,
-        tint: Color,
-    ) {
-        unsafe {
-            raylib4_sys::DrawTexturePro(
-                self.0,
-                source.into(),
-                dest.into(),
-                origin.into(),
-                rotation,
-                tint.into(),
-            );
-        }
-    }
-
-    /// Draws a texture (or part of it) that stretches or shrinks nicely.
-    pub fn draw_n_patch(
-        &mut self,
-        info: NpatchInfo,
-        dest: Rectangle,
-        origin: Position,
-        rotation: f32,
-        tint: Color,
-    ) {
-        unsafe {
-            raylib4_sys::DrawTextureNPatch(
-                self.0,
-                info.into(),
-                dest.into(),
-                origin.into(),
-                rotation,
-                tint.into(),
-            );
-        }
-    }
-
-    /// Draw a textured polygon.
-    pub fn draw_poly(
-        &mut self,
-        centor: Position,
-        points: &[Position],
-        texcoord: &[Position],
-        tint: Color,
-    ) {
-        let mut points = points
-            .iter()
-            .copied()
-            .map(raylib4_sys::Vector2::from)
-            .collect::<Vec<_>>();
-        let mut texcoord = texcoord
-            .iter()
-            .copied()
-            .map(raylib4_sys::Vector2::from)
-            .collect::<Vec<_>>();
-        unsafe {
-            raylib4_sys::DrawTexturePoly(
-                self.0,
-                centor.into(),
-                points.as_mut_ptr(),
-                texcoord.as_mut_ptr(),
-                points.len() as c_int,
-                tint.into(),
-            );
-        }
     }
 }
 

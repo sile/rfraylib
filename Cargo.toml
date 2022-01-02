@@ -24,3 +24,7 @@ path = "examples/core/core_2d_camera.rs"
 [[example]]
 name = "text_input_box"
 path = "examples/text/text_input_box.rs"
+
+[[example]]
+name = "textures_mouse_painting"
+path = "examples/textures/textures_mouse_painting.rs"

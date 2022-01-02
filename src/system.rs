@@ -229,7 +229,7 @@ impl System {
     }
 
     pub fn create_texture_canvas<'a, 'b>(
-        &'a mut self,
+        &'a self,
         target: &'b mut RenderTexture,
     ) -> TextureCanvas<'a, 'b, Self> {
         TextureCanvas::new(self, target)

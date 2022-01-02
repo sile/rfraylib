@@ -1,6 +1,6 @@
 use crate::structs::Rectangle;
 use crate::text::Font;
-use crate::texture::{PixelFormat, RenderTexture};
+use crate::texture::{NpatchInfo, PixelFormat, RenderTexture, Texture};
 use crate::{Position, Size};
 use std::ffi::CString;
 use std::os::raw::{c_int, c_void};
@@ -167,17 +167,6 @@ pub trait Draw {
         Self: Sized,
     {
         ScissorModeCanvas::new(self, position, size)
-    }
-
-    // TODO: delete(?)
-    fn create_texture_canvas<'a, 'b>(
-        &'a mut self,
-        target: &'b mut RenderTexture,
-    ) -> TextureCanvas<'a, 'b, Self>
-    where
-        Self: Sized,
-    {
-        TextureCanvas::new(self, target)
     }
 
     /// Draw a pixel.
@@ -705,6 +694,157 @@ pub trait Draw {
                 u32::from(c) as c_int,
                 position.into(),
                 font_size,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draw a Texture2D.
+    fn draw_texture(&mut self, texture: &Texture, position: Position, tint: Color) {
+        unsafe { raylib4_sys::DrawTextureV(texture.0, position.into(), tint.into()) };
+    }
+
+    /// Draw a Texture2D with extended parameters.
+    fn draw_texture_ex(
+        &mut self,
+        texture: &Texture,
+        position: Position,
+        rotation: f32,
+        scale: f32,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTextureEx(texture.0, position.into(), rotation, scale, tint.into())
+        };
+    }
+
+    /// Draw a part of a texture defined by a rectangle.
+    fn draw_texture_rec(
+        &mut self,
+        texture: &Texture,
+        source: Rectangle,
+        position: Position,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTextureRec(texture.0, source.into(), position.into(), tint.into());
+        }
+    }
+
+    /// Draw texture quad with tiling and offset parameters.
+    fn draw_texture_quad(
+        &mut self,
+        texture: &Texture,
+        tiling: Size,
+        offset: Position,
+        quad: Rectangle,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTextureQuad(
+                texture.0,
+                tiling.into(),
+                offset.into(),
+                quad.into(),
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draw part of a texture (defined by a rectangle) with rotation and scale tiled into dest.
+    fn draw_texture_tiled(
+        &mut self,
+        texture: &Texture,
+        source: Rectangle,
+        dest: Rectangle,
+        origin: Position,
+        rotation: f32,
+        scale: f32,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTextureTiled(
+                texture.0,
+                source.into(),
+                dest.into(),
+                origin.into(),
+                rotation,
+                scale,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draw a part of a texture defined by a rectangle with 'pro' parameters.
+    fn draw_texture_pro(
+        &mut self,
+        texture: &Texture,
+        source: Rectangle,
+        dest: Rectangle,
+        origin: Position,
+        rotation: f32,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTexturePro(
+                texture.0,
+                source.into(),
+                dest.into(),
+                origin.into(),
+                rotation,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draws a texture (or part of it) that stretches or shrinks nicely.
+    fn draw_texture_npatch(
+        &mut self,
+        texture: &Texture,
+        info: NpatchInfo,
+        dest: Rectangle,
+        origin: Position,
+        rotation: f32,
+        tint: Color,
+    ) {
+        unsafe {
+            raylib4_sys::DrawTextureNPatch(
+                texture.0,
+                info.into(),
+                dest.into(),
+                origin.into(),
+                rotation,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draw a textured polygon.
+    fn draw_texture_poly(
+        &mut self,
+        texture: &Texture,
+        centor: Position,
+        points: &[Position],
+        texcoord: &[Position],
+        tint: Color,
+    ) {
+        let mut points = points
+            .iter()
+            .copied()
+            .map(raylib4_sys::Vector2::from)
+            .collect::<Vec<_>>();
+        let mut texcoord = texcoord
+            .iter()
+            .copied()
+            .map(raylib4_sys::Vector2::from)
+            .collect::<Vec<_>>();
+        unsafe {
+            raylib4_sys::DrawTexturePoly(
+                texture.0,
+                centor.into(),
+                points.as_mut_ptr(),
+                texcoord.as_mut_ptr(),
+                points.len() as c_int,
                 tint.into(),
             );
         }
